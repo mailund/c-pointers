@@ -47,6 +47,8 @@ void string_copy___(char *output, const char *input)
   while ( (*output++ = *input++) ) ;
 }
 
+
+
 int main(int argc, char **argv)
 {
   const char *string = "hello, world\n";
