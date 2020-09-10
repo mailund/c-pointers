@@ -19,53 +19,56 @@ char *find_word(char *x)
   return x;
 }
 
-struct tokenizer_iter {
+struct word_iter {
   char *x;
   char replaced;
 };
 
-void init_tokenizer(struct tokenizer_iter *iter,
+void init_word_iter(struct word_iter *iter,
                     char *string)
 {
   iter->x = string;
   iter->replaced = *string;
 }
 
-bool next_token(struct tokenizer_iter *iter,
-                char **token)
+bool next_word(struct word_iter *iter,
+                char **word)
 {
   *iter->x = iter->replaced;
-  *token = find_word(iter->x);
-  if (**token == '\0') return false;
-  iter->x = skip_word(*token);
+  *word = find_word(iter->x);
+  if (**word == '\0') return false;
+  iter->x = skip_word(*word);
   iter->replaced = *iter->x;
   *iter->x = '\0';
   return true;
 }
 
-void dealloc_tokenizer(struct tokenizer_iter *iter)
+void dealloc_word_iter(struct word_iter *iter)
 {
   *iter->x = iter->replaced;
 }
 
 int main(int argc, char **argv)
 {
-  // We modify the string we tokenize, so we
+  // We modify the string we wordize, so we
   // cannot use a literate string. Those are immutable
   // and if we try, the program will probably crash.
   const char *orig_string = "\tfoo!  bar\n\tbaz qux\n";
   char string[strlen(orig_string) + 1];
   strcpy(string, orig_string);
 
-  struct tokenizer_iter iter;
-  init_tokenizer(&iter, string);
+  // Setup iterator
+  struct word_iter iter;
+  init_word_iter(&iter, string);
 
-  char *token;
-  while (next_token(&iter, &token)) {
-    printf("token: '%s'\n", token);
+  // Iterate
+  char *word;
+  while (next_word(&iter, &word)) {
+    printf("word: '%s'\n", word);
   }
 
-  dealloc_tokenizer(&iter);
+  // Cleanup
+  cleanup_word_iter(&iter);
 
   // We have restored the string to its original shape
   assert(strcmp(string, orig_string) == 0);
