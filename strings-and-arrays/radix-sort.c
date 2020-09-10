@@ -1,9 +1,50 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
+int *scan_right(int *left, int *right)
+{
+  while (left < right) {
+    if (*left >= 0) break;
+    left++;
+  }
+  return left;
+}
 
-void bucket_sort(int *input, int *output, int n, int offset)
+int *scan_left(int *left, int *right)
+{
+  while (left < right) {
+    if (*right < 0) break;
+    right--;
+  }
+  return right;
+}
+
+void swap(int *left, int *right)
+{
+  int i = *left;
+  *left = *right;
+  *right = i;
+}
+
+int *split(int *left, int *right)
+{
+  while (left < right) {
+    left = scan_right(left, right);
+    right = scan_left(left, right);
+    swap(left, right);
+  }
+  return left;
+}
+
+void reverse(int *left, int *right)
+{
+  while (left < right) {
+    swap(left++, right--);
+  }
+}
+
+void bucket_sort(int *input, int *output, 
+                 int n, int offset)
 {
   int buckets[256];
   for (int i = 0; i < 256; i++) {
@@ -11,7 +52,8 @@ void bucket_sort(int *input, int *output, int n, int offset)
   }
 
   for (int i = 0; i < n; i++) {
-    unsigned char *integer = (unsigned char *)(input + i);
+    unsigned char *integer =
+      (unsigned char *)(input + i);
     unsigned char bucket = integer[offset];
     buckets[bucket]++;
   }
@@ -24,14 +66,15 @@ void bucket_sort(int *input, int *output, int n, int offset)
   }
 
   for (int i = 0; i < n; i++) {
-    unsigned char *integer = (unsigned char *)(input + i);
+    unsigned char *integer =
+      (unsigned char *)(input + i);
     unsigned char bucket = integer[offset];
     int index = buckets[bucket]++;
     output[index] = input[i];
   }
 }
 
-void sort_int(int *input, int *output, int n)
+void radix_sort(int *input, int *output, int n)
 {
   // helper buffers
   int helper0[n], helper1[n];
@@ -39,10 +82,12 @@ void sort_int(int *input, int *output, int n)
   for (int i = 0; i < n; i++) {
     helper0[i] = input[i];
   }
-  bool bucket_input = false;
+  int bucket_input = 0;
 
   for (int offset = 0; offset < sizeof(int); offset++) {
-    bucket_sort(helpers[bucket_input], helpers[!bucket_input], n, offset);
+    bucket_sort(helpers[bucket_input], 
+                helpers[!bucket_input], 
+                n, offset);
     bucket_input = !bucket_input;
   }
 
@@ -51,15 +96,26 @@ void sort_int(int *input, int *output, int n)
   }
 }
 
+void sort_int(int *input, int *output, int n)
+{
+  int *left = input;
+  int *right = input + n - 1;
+  int *x = split(left, right);
+  int m = x - left;
+
+  radix_sort(input, output, m);
+  reverse(output, output + m - 1);
+  radix_sort(input + m, output + m, n - m);
+}
+
 int main(int argc, char **argv)
 {
-  int input[] = { 'a', 'b', 'c', 12, 4, 42000, 13, 6, 14, 870, -1, -2, -3 };
+  int input[] = { -1, -2, 13, 'a', 'b', 'c', 12, 4, 42000, 
+                  13, 6, 14, 870, -1, -2, -3, 42, 13 };
   int n = sizeof(input) / sizeof(int);
   int output[n];
 
   sort_int(input, output, n);
-
-  printf("output: ");
   for (int i = 0; i < n; i++) {
     printf("%d ", output[i]);
   }
