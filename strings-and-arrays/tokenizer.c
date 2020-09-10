@@ -5,24 +5,24 @@
 #include <stdbool.h>
 #include <assert.h>
 
+char *skip_word(char *x)
+{
+  while (*x && isalpha(*x))
+    x++;
+  return x;
+}
+
+char *find_word(char *x)
+{
+  while (*x && !isalpha(*x))
+    x++;
+  return x;
+}
+
 struct tokenizer_iter {
   char *x;
   char replaced;
 };
-
-char *skip_whitespace(char *x)
-{
-  while (*x && isspace(*x))
-    x++;
-  return x;
-}
-
-char *next_whitespace(char *x)
-{
-  while (*x && !isspace(*x))
-    x++;
-  return x;
-}
 
 void init_tokenizer(struct tokenizer_iter *iter,
                     char *string)
@@ -35,9 +35,9 @@ bool next_token(struct tokenizer_iter *iter,
                 char **token)
 {
   *iter->x = iter->replaced;
-  *token = skip_whitespace(iter->x);
+  *token = find_word(iter->x);
   if (**token == '\0') return false;
-  iter->x = next_whitespace(*token);
+  iter->x = skip_word(*token);
   iter->replaced = *iter->x;
   *iter->x = '\0';
   return true;
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
   // We modify the string we tokenize, so we
   // cannot use a literate string. Those are immutable
   // and if we try, the program will probably crash.
-  const char *orig_string = "\thello,  world\n";
+  const char *orig_string = "\tfoo!  bar\n\tbaz qux\n";
   char string[strlen(orig_string) + 1];
   strcpy(string, orig_string);
 
