@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
 #include <string.h>
+#include <assert.h>
 
 const char *skip(const char *x)
 {
@@ -25,7 +24,7 @@ void runlength_encode(const char *input, char *output)
 
 int main(int argc, char **argv)
 {
-  const char *x = "aabaabbbcbcc";
+  const char *x = "aaaabbbbbbbaabbbcbbccccc";
   char buffer[2 * strlen(x) + 1];
 
   runlength_encode(x, buffer);
