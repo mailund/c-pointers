@@ -1,47 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int *scan_right(int *left, int *right)
-{
-  while (left < right) {
-    if (*left >= 0) break;
-    left++;
-  }
-  return left;
-}
-
-int *scan_left(int *left, int *right)
-{
-  while (left < right) {
-    if (*right < 0) break;
-    right--;
-  }
-  return right;
-}
-
-void swap(int *left, int *right)
-{
-  int i = *left;
-  *left = *right;
-  *right = i;
-}
-
-int *split(int *left, int *right)
-{
-  while (left < right) {
-    left = scan_right(left, right);
-    right = scan_left(left, right);
-    swap(left, right);
-  }
-  return left;
-}
-
-void reverse(int *left, int *right)
-{
-  while (left < right) {
-    swap(left++, right--);
-  }
-}
 
 void bucket_sort(int *input, int *output,
                  int n, int offset)
@@ -92,11 +51,54 @@ void radix_sort(int *input, int *output, int n)
   }
 }
 
+int *scan_right(int *left, int *right)
+{
+  while (left < right) {
+    if (*left >= 0) break;
+    left++;
+  }
+  return left;
+}
+
+int *scan_left(int *left, int *right)
+{
+  while (left < right) {
+    if (*right < 0) break;
+    right--;
+  }
+  return right;
+}
+
+void swap(int *left, int *right)
+{
+  int i = *left;
+  *left = *right;
+  *right = i;
+}
+
+int *split(int *left, int *right)
+{
+  while (left < right) {
+    left = scan_right(left, right);
+    right = scan_left(left, right);
+    swap(left, right);
+  }
+  return left;
+}
+
+void reverse(int *left, int *right)
+{
+  while (left < right) {
+    swap(left++, right--);
+  }
+}
+
+
 void sort_int(int *input, int *output, int n)
 {
   int *left = input;
-  int *right = input + n - 1;
-  int *x = split(left, right);
+  int *right = input + n;
+  int *x = split(left, right - 1);
   int m = x - left;
 
   radix_sort(input, output, m);
@@ -106,8 +108,7 @@ void sort_int(int *input, int *output, int n)
 
 int main(int argc, char **argv)
 {
-  int input[] = { -1, -2, 13, 'a', 'b', 'c', 12, 4, 42000,
-                  13, 6, 14, 870, -1, -2, -3, 42, 13 };
+  int input[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
   int n = sizeof(input) / sizeof(int);
   int output[n];
 
