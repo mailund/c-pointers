@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 
-
-void bucket_sort(int *input, int *output,
-                 int n, int offset)
+void bucket_sort(int n, int offset,
+                 const int input[n], int output[n])
 {
   int buckets[256];
   for (int i = 0; i < 256; i++) {
@@ -29,28 +29,30 @@ void bucket_sort(int *input, int *output,
   }
 }
 
-void radix_sort(int *input, int *output, int n)
+void radix_sort(int n, int array[n])
 {
-  // helper buffers
-  int helper0[n], helper1[n];
-  int *helpers[] = { helper0, helper1 };
-  for (int i = 0; i < n; i++) {
-    helper0[i] = input[i];
-  }
+  // Helper buffer; handle input/output switches
+  // when bucket sorting
+  int helper[n];
+  // For switching between the buffers
+  int *buffers[] = { array, helper };
   int bucket_input = 0;
 
   for (int offset = 0; offset < sizeof(int); offset++) {
-    bucket_sort(helpers[bucket_input],
-                helpers[!bucket_input],
-                n, offset);
+    bucket_sort(n, offset,
+                buffers[bucket_input],
+                buffers[!bucket_input]);
     bucket_input = !bucket_input;
   }
 
-  for (int i = 0; i < n; i++) {
-    output[i] = helpers[!bucket_input][i];
-  }
+  // It is *very* unlikely that sizeof(int) is odd, but if
+  // it is, you need to move the results from helper
+  // to array. I assume that we have an even number of bytes
+  // because that is practically always true for int
+  assert(sizeof(int) % 2 == 0);
 }
 
+// Both left and right must point to legal addresses
 int *scan_right(int *left, int *right)
 {
   while (left < right) {
@@ -60,6 +62,7 @@ int *scan_right(int *left, int *right)
   return left;
 }
 
+// Both left and right must point to legal addresses
 int *scan_left(int *left, int *right)
 {
   while (left < right) {
@@ -69,6 +72,7 @@ int *scan_left(int *left, int *right)
   return right;
 }
 
+// Both left and right must point to legal addresses
 void swap(int *left, int *right)
 {
   int i = *left;
@@ -76,45 +80,41 @@ void swap(int *left, int *right)
   *right = i;
 }
 
-int *split(int *left, int *right)
+int split(int n, int array[n])
 {
+  int *left = array, *right = array + n - 1;
   while (left < right) {
     left = scan_right(left, right);
     right = scan_left(left, right);
     swap(left, right);
   }
-  return left;
+  return left - array;
 }
 
-void reverse(int *left, int *right)
+void reverse(int n, int array[n])
 {
+  int *left = array, *right = array + n - 1;
   while (left < right) {
     swap(left++, right--);
   }
 }
 
-
-void sort_int(int *input, int *output, int n)
+void sort_int(int n, int array[n])
 {
-  int *left = input;
-  int *right = input + n;
-  int *x = split(left, right - 1);
-  int m = x - left;
-
-  radix_sort(input, output, m);
-  reverse(output, output + m - 1);
-  radix_sort(input + m, output + m, n - m);
+  int m = split(n, array);
+  radix_sort(m, array);
+  reverse(m, array);
+  radix_sort(n - m, array + m);
 }
 
 int main(int argc, char **argv)
 {
-  int input[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
-  int n = sizeof(input) / sizeof(int);
-  int output[n];
+  int array[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
+  int n = sizeof(array) / sizeof(array[0]);
 
-  sort_int(input, output, n);
+  sort_int(n, array);
   for (int i = 0; i < n; i++) {
-    printf("%d ", output[i]);
+    printf("%d ", array[i]);
   }
   printf("\n");
 
