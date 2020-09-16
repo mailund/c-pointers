@@ -1,8 +1,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int compact0(int n, int array[n])
+{
+  int m = 0;
+  for (int i = 0; i < n; i++) {
+    if (array[i] > 0)
+      array[m++] = array[i];
+  }
+  return m;
+}
 
-int *eratosthenes(int n, int buf[n])
+int eratosthenes(int n, int buf[n])
 {
   // Init
   buf[0] = buf[1] = 0;
@@ -20,26 +29,21 @@ int *eratosthenes(int n, int buf[n])
   }
 
   // Compact
-  int *compact = buf;
-  for (int *from = buf; from < buf + n; from++) {
-    if (*from)
-      *compact++ = *from;
-  }
-
-  return compact;
+  return compact0(n, buf);
 }
 
-int *sieve_candidates(int *from, int *to, int p)
+void sieve_candidates(int **from, int **to)
 {
-  int *output = from;
-  for ( ; from < to; from++) {
-    if (*from % p != 0)
-      *output++ = *from;
+  int p = *(*from)++;
+  int *output = *from;
+  for (int *input = *from ; input < *to; input++) {
+    if (*input % p != 0)
+      *output++ = *input;
   }
-  return output;
+  *to = output;
 }
 
-int *eratosthenes_(int n, int buf[n])
+int eratosthenes_(int n, int buf[n])
 {
   // Init
   for (int i = 2; i < n; i++) {
@@ -50,12 +54,12 @@ int *eratosthenes_(int n, int buf[n])
   int *candidates = buf;
   int *end = buf + n - 2;
   while (candidates < end) {
-    int p = *candidates++;
-    end = sieve_candidates(candidates, end, p);
+    sieve_candidates(&candidates, &end);
   }
 
-  return end;
+  return end - buf;
 }
+
 
 void print_array(int *begin, int *end)
 {
@@ -70,10 +74,10 @@ int main(int argc, char **argv)
   int n = 100;
   int buf[n];
 
-  int *end = eratosthenes(n, buf);
-  print_array(buf, end);
-  end = eratosthenes_(n, buf);
-  print_array(buf, end);
+  int m = eratosthenes(n, buf);
+  print_array(buf, buf + m);
+  m = eratosthenes_(n, buf);
+  print_array(buf, buf + m);
 
   return EXIT_SUCCESS;
 }
