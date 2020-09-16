@@ -34,7 +34,7 @@ int eratosthenes(int n, int buf[n])
 
 void sieve_candidates(int **from, int **to)
 {
-  int p = *(*from)++;
+  int p = *(*from)++; // get the prime and move from
   int *output = *from;
   for (int *input = *from ; input < *to; input++) {
     if (*input % p != 0)
