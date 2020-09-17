@@ -112,6 +112,12 @@ int main(int argc, char **argv)
   int array[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
   int n = sizeof(array) / sizeof(array[0]);
 
+  radix_sort(n, array);
+  for (int i = 0; i < n; i++) {
+    printf("%d ", array[i]);
+  }
+  printf("\n");
+
   sort_int(n, array);
   for (int i = 0; i < n; i++) {
     printf("%d ", array[i]);
