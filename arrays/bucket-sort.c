@@ -1,36 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-void sort_chars(const char *input, char *output)
+void compute_buckets(int n, char *array[n], int buckets[256])
 {
-  int buckets[256];
   for (int i = 0; i < 256; i++) {
     buckets[i] = 0;
   }
 
-  while (*input) {
-    unsigned char bucket = *input;
+  for (int i = 0; i < n; i++) {
+    unsigned char bucket = (unsigned char)array[i][0];
     buckets[bucket]++;
-    input++;
   }
 
-  int k = 0;
-  for (int i = 0; i < 256; i++) {
-    for (int j = 0; j < buckets[i]; j++) {
-      output[k++] = (char)i;
-    }
+  int m = n;
+  for (int i = 256 - 1; i >= 0; i--) {
+    int count = buckets[i];
+    buckets[i] = m - count;
+    m -= count;
+  }
+}
+
+void sort_strings(int n, char *input[n], char *output[n])
+{
+  int buckets[256];
+  compute_buckets(n, input, buckets);
+  for (int i = 0; i < n; i++) {
+    unsigned char bucket = (unsigned char)input[i][0];
+    int index = buckets[bucket]++;
+    output[index] = input[i];
   }
 }
 
 int main(int argc, char **argv)
 {
-  const char *input = "foobar";
-  int n = strlen(input);
-  char output[n + 1]; output[n] = '\0';
+  char *array[] = {
+    "foo", "boo", "bar", "qoo", "qar", "baz", "qux", "qaz"
+  };
+  int n = sizeof(array) / sizeof(char *);
+  char *output[n];
 
-  sort_chars(input, output);
-  printf("%s -> %s\n", input, output);
+  sort_strings(n, array, output);
+
+  for (int i = 0; i < n; i++) {
+    printf("%s\n", output[i]);
+  }
 
   return EXIT_SUCCESS;
 }

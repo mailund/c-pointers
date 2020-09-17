@@ -17,9 +17,9 @@ void bucket_sort(int n, int offset,
 
   int m = n;
   for (int i = 256 - 1; i >= 0; i--) {
-    int bucket = buckets[i];
-    buckets[i] = m - bucket;
-    m -= bucket;
+    int count = buckets[i];
+    buckets[i] = m - count;
+    m -= count;
   }
 
   for (int i = 0; i < n; i++) {
