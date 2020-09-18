@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#if 0
 void pointer(int *a)
 {
   printf("pointer: %zu %zu\n", sizeof(a), sizeof(*a));
@@ -21,7 +20,6 @@ void array_with_parameter_size(int n, int a[n])
 {
   printf("array[n]: %zu %zu\n", sizeof(a), sizeof(*a));
 }
-#endif
 
 #if 0
 void error(int a[n], int n)
@@ -37,6 +35,18 @@ void size_constrained(int a[static 4])
 void indirect_size_constrained(int a[static 2])
 {
   size_constrained(a);
+}
+
+void pointer_to_array(int (*a)[3])
+{
+  printf("*array: %zu = %zu x %zu\n",
+         sizeof(*a), sizeof(*a)/sizeof(**a), sizeof(**a));
+}
+
+void pointer_to_array_n(int n, int (*a)[n])
+{
+  printf("*array: %zu = %zu x %zu\n",
+         sizeof(*a), sizeof(*a)/sizeof(**a), sizeof(**a));
 }
 
 int main(int argc, char **argv)
@@ -56,6 +66,9 @@ int main(int argc, char **argv)
   size_constrained(p); // No warning
 
   indirect_size_constrained(b); // No warning
+
+  pointer_to_array(&a);
+  pointer_to_array_n(10, &a);
 
   return EXIT_SUCCESS;
 }
