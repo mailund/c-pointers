@@ -21,54 +21,64 @@ void array_with_parameter_size(int n, int a[n])
   printf("array[n]: %zu %zu\n", sizeof(a), sizeof(*a));
 }
 
-#if 0
-void error(int a[n], int n)
-{
-  // won't compile
-}
-#endif
-
 void size_constrained(int a[static 4])
 {
+  printf("size constrained a[0] == %d\n", a[0]);
 }
 
 void indirect_size_constrained(int a[static 2])
 {
-  size_constrained(a);
+  size_constrained(a); // No warning, though 2 < 4
 }
 
 void pointer_to_array(int (*a)[3])
 {
-  printf("*array: %zu = %zu x %zu\n",
+  printf("*a: %zu = %zu x %zu\n",
          sizeof(*a), sizeof(*a)/sizeof(**a), sizeof(**a));
 }
 
 void pointer_to_array_n(int n, int (*a)[n])
 {
-  printf("*array: %zu = %zu x %zu\n",
-         sizeof(*a), sizeof(*a)/sizeof(**a), sizeof(**a));
+  printf("*a with n = %d: %zu = %zu x %zu\n",
+         n, sizeof(*a),
+         sizeof(*a)/sizeof(**a), sizeof(**a));
+}
+
+void indirect_pointer_to_array(int n, int (*array)[1])
+{
+  pointer_to_array(array); // Warning, ok bcause 1 < 3
 }
 
 int main(int argc, char **argv)
 {
   int n = 100;
-  int a[n];
+  int a[n]; a[0] = 42;
+  int b[2]; b[0] = 13;
+  int *p = b;
 
   printf("declared: %zu %zu\n", sizeof(a), sizeof(*a));
   pointer(a);
   array(a);
-  array_with_size(a);
-  array_with_parameter_size(n, a);
+  array_with_size(a); // Ok, 100 > 5
+  array_with_size(b); // No warning although 2 < 50
+  array_with_parameter_size(n, a); // Ok, a has size n
+  array_with_parameter_size(n, b); // No warning but 2 < 100
 
-  int b[2];
-  size_constrained(b); // Warning
-  int *p = b;
-  size_constrained(p); // No warning
+  size_constrained(b); // Warning (correct, 2 < 4)
+  size_constrained(p); // No warning, even though p == b
 
-  indirect_size_constrained(b); // No warning
+  indirect_size_constrained(b); // No warning...
 
-  pointer_to_array(&a);
-  pointer_to_array_n(10, &a);
+  pointer_to_array(&a); // Ok, 100 > 3
+  pointer_to_array(&b); // Warning (correct 2 < 3)
+  pointer_to_array_n(10, &a); // Ok since 100 > 10
+  pointer_to_array_n(50, &b); // No warning, although 2 < 50
+
+  pointer_to_array(p); // Warning, ok since p does not point to array
+  pointer_to_array_n(10, p); // Warning, ditto
+
+  indirect_pointer_to_array(2, b);
+
 
   return EXIT_SUCCESS;
 }
