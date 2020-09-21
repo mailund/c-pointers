@@ -75,6 +75,12 @@ void x(void)
   // This may or may not actually change i. It is up to the C compiler
 }
 
+void foo(const int *cip)
+{
+  int *ip = (int *)cip;
+  *ip = 5;
+}
+
 void f4(void)
 {
   printf("---------- f4() -----------------\n");
@@ -122,6 +128,18 @@ int main(int argc, char **argv)
   x();
   f4();
   f5();
+
+  const int k = 42;
+  int *ip = (int *)&k;
+  *ip = 13; // i = 13
+  printf("i == %d, *ip == %d\n", k, *ip);
+
+  const int i = 42;
+  int j = 13;
+  foo(&i);
+  foo(&j);
+  printf("i == %d, j == %d\n", i, j);
+  
 
   return EXIT_SUCCESS;
 }
