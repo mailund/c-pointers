@@ -43,5 +43,6 @@ int main(int argc, char **argv)
 
   print_matrix(2, 2, C);
 
+
   return EXIT_SUCCESS;
 }
