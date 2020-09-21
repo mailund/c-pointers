@@ -1,33 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-void print_matrix(int n, int m, int matrix[n][m])
+void mult(int n, int m, int l,
+          double C[n][m],
+          const double A[n][l],
+          const double B[l][m])
 {
-  printf("[\n");
   for (int i = 0; i < n; i++) {
-    printf("\t[");
     for (int j = 0; j < m; j++) {
-      printf("%d ", matrix[i][j]);
+      double x = 0.0;
+      for (int k = 0; k < l; k++) {
+        x += A[i][k] * B[k][j];
+      }
+      C[i][j] = x;
     }
-    printf("]\n");
   }
-  printf("]\n");
+}
+
+void print_matrix(int n, int m, double A[n][m])
+{
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+      printf("%2.2f ", A[i][j]);
+    }
+    printf("\n");
+  }
 }
 
 int main(int argc, char **argv)
 {
-  int m[2][3] = {
-    {1, 2, 3},
-    {11, 22, 33}
+  double A[2][3] = {
+    { 1, 2, 3 },
+    { 4, 5, 6 }
   };
-  int a[2 * 3];
-  memcpy(a, m, 2 * 3 * sizeof(int));
+  double B[3][2] = {
+    { 1, 2 },
+    { 3, 4 },
+    { 5, 6 }
+  };
+  double C[2][2];
+  mult(2, 2, 3, C, A, B);
 
-  print_matrix(2, 3, m);
-  print_matrix(2, 3, (int (*)[3])a);
-  print_matrix(2, 2, (int (*)[2])a);
-  print_matrix(2, 2, (int (*)[2])m);
+  print_matrix(2, 2, C);
 
   return EXIT_SUCCESS;
 }
