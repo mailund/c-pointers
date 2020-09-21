@@ -19,7 +19,6 @@ void runlength_encode(const char *input, char *output)
     output += sprintf(output, "%d%c", length, c);
     input = next;
   }
-  *output = '\0';
 }
 
 int main(int argc, char **argv)

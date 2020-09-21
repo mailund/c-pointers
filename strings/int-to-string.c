@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <strings.h>
 
 int no_digits(int n)
 {
@@ -20,7 +21,6 @@ void neg_int_to_string(int n, char *s)
 
 void int_to_string(int n, char *s)
 {
-  char *x = s;
   if (n == 0) {
     s[0] = '0'; s[1] = '\0';
     return;
@@ -32,6 +32,41 @@ void int_to_string(int n, char *s)
   *s-- = '\0';
   neg_int_to_string(n, s);
 }
+
+void reverse_string(char *s)
+{
+  char *left = s;
+  char *right = s + strlen(s) - 1;
+  for ( ; left < right; left++, right--) {
+    char c = *left;
+    *left = *right;
+    *right = c;
+  }
+}
+
+void neg_int_to_string_rev(int n, char *s)
+{
+  // we need to remember the beginning for reversal
+  char *front = s;
+  static const char *digits = "0123456789";
+  for ( ; n ; n /= 10) {
+    *s++ = digits[-(n % 10)];
+  }
+  reverse_string(front);
+}
+
+void int_to_string_rev(int n, char *s)
+{
+  if (n == 0) {
+    s[0] = '0'; s[1] = '\0';
+    return;
+  }
+
+  if (n < 0) *s++ = '-';
+  if (n > 0) n = -n;
+  neg_int_to_string_rev(n, s);
+}
+
 
 char *neg_int_to_string_(int n, char *s)
 {
@@ -83,13 +118,14 @@ int main(int argc, char **argv)
 {
   int n = 11;
   int digits = log10(n) + 1;
-  char buf[digits], buf2[digits], buf3[digits];
+  char buf[digits], buf2[digits], buf3[digits], buf4[digits];
 
   for (int i = -n; i < n; i++) {
     int_to_string(i, buf);
-    int_to_string_(i, buf2);
-    int_to_string__(i, buf3);
-    printf("%d = '%s' / '%s' / '%s'\n", i, buf, buf2, buf3);
+    int_to_string_rev(i, buf2);
+    int_to_string_(i, buf3);
+    int_to_string__(i, buf4);
+    printf("%d = '%s' / '%s' / '%s' / '%s'\n", i, buf, buf2, buf3, buf4);
   }
 
   return EXIT_SUCCESS;

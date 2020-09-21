@@ -47,14 +47,27 @@ void string_copy___(char *output, const char *input)
   while ( (*output++ = *input++) ) ;
 }
 
-
+void reverse_string(char *s)
+{
+  char *left = s;
+  char *right = s + strlen(s) - 1;
+  for ( ; left < right; left++, right--) {
+    char c = *left;
+    *left = *right;
+    *right = c;
+  }
+}
 
 int main(int argc, char **argv)
 {
   const char *string = "hello, world\n";
   int n = strlen(string);
+  printf("The string has length %d, and we need %d chars to represent it\n", n, n + 1);
   char buffer[n + 1];
   string_copy___(buffer, string);
+  printf("%s", buffer);
+
+  reverse_string(buffer);
   printf("%s", buffer);
 
   return EXIT_SUCCESS;
