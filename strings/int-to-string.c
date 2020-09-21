@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <strings.h>
+#include <string.h>
 
 int no_digits(int n)
 {

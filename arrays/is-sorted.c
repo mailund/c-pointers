@@ -3,6 +3,15 @@
 #include <string.h>
 #include <stdbool.h>
 
+bool int_is_sorted(int n, int array[n])
+{
+  for (int i = 1; i < n; i++) {
+    if (array[i - 1] > array[i])
+      return false;
+  }
+  return true;
+}
+
 int int_compare(const void *x, const void *y)
 {
   // Get the objects, and interpret them as integers
@@ -19,7 +28,8 @@ int string_compare(const void *x, const void *y)
   return strcmp(*a, *b);
 }
 
-typedef int (*compare_function)(const void *, const void *);
+typedef int (*compare_function)(const void *,
+                                const void *);
 bool is_sorted(const void *array,
                size_t len, size_t obj_size,
                compare_function cmp)
@@ -40,13 +50,24 @@ int main(int argc, char **argv)
   int int_array[] = { 10, 5, 30, 15, 20, 30 };
   int int_array_length = sizeof(int_array) / sizeof(int);
 
+  if (int_is_sorted(int_array_length, int_array)) {
+    printf("int_array is sorted\n");
+  } else {
+    printf("int_array is not sorted\n");
+  }
   if (is_sorted(int_array, int_array_length,
                 sizeof(int), int_compare)) {
     printf("int_array is sorted\n");
   } else {
     printf("int_array is not sorted\n");
   }
-  qsort(int_array, int_array_length, sizeof(int), int_compare);
+  qsort(int_array, int_array_length,
+        sizeof(int), int_compare);
+  if (int_is_sorted(int_array_length, int_array)) {
+    printf("int_array is sorted\n");
+  } else {
+    printf("int_array is not sorted\n");
+  }
   if (is_sorted(int_array, int_array_length,
                 sizeof(int), int_compare)) {
     printf("int_array is sorted\n");
@@ -63,7 +84,8 @@ int main(int argc, char **argv)
   } else {
     printf("string_array is not sorted\n");
   }
-  qsort(string_array, string_array_length, sizeof(char *), string_compare);
+  qsort(string_array, string_array_length,
+        sizeof(char *), string_compare);
   if (is_sorted(string_array, string_array_length,
                 sizeof(char *), string_compare)) {
     printf("string_array is sorted\n");
