@@ -1,7 +1,5 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <stdbool.h>
 
 char *skip_word(char *x)
 {
@@ -17,7 +15,7 @@ char *find_word(char *x)
   return x;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *words = "\tfoo!  bar\n\tbaz qux\n";
 
@@ -27,5 +25,5 @@ int main(int argc, char **argv)
     x = find_word(skip_word(x));
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

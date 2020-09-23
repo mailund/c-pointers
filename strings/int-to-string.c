@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <math.h>
 #include <strings.h>
 
@@ -114,7 +113,7 @@ void int_to_string__(int n, char *s)
   *s = '\0';
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int n = 11;
   int digits = log10(n) + 1;
@@ -128,5 +127,5 @@ int main(int argc, char **argv)
     printf("%d = '%s' / '%s' / '%s' / '%s'\n", i, buf, buf2, buf3, buf4);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

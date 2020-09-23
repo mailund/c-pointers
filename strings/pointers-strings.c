@@ -1,9 +1,8 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *string = "hello, world!\n";
   const char *cp = string;
@@ -14,5 +13,5 @@ int main(int argc, char **argv)
     assert(*(string + i) == *(cp + i));
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

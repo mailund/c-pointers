@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -43,7 +42,7 @@ void cleanup_word_iter(struct word_iter *iter)
   // We don't need to clean anything up here
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *words = "\tfoo!  bar\n\tbaz qux\n";
 
@@ -55,7 +54,7 @@ int main(int argc, char **argv)
     printf("Current position: '%s'\n", word);
   }
 
-  cleaup_word_iter(&iter);
+  cleanup_word_iter(&iter);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

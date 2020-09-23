@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
@@ -21,7 +20,7 @@ void runlength_encode(const char *input, char *output)
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *x = "aaaabbbbbbbaabbbcbbccccc";
   char buffer[2 * strlen(x) + 1];
@@ -29,5 +28,5 @@ int main(int argc, char **argv)
   runlength_encode(x, buffer);
   printf("%s\n", buffer);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
 
@@ -37,7 +36,7 @@ void cleanup_runlength_iter(struct runlength_iter *iter)
   // nothing to do here
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *x = "aabaabbbcbcc";
 
@@ -50,5 +49,5 @@ int main(int argc, char **argv)
   }
   cleanup_runlength_iter(&iter);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -58,7 +57,7 @@ void reverse_string(char *s)
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *string = "hello, world\n";
   int n = strlen(string);
@@ -70,5 +69,5 @@ int main(int argc, char **argv)
   reverse_string(buffer);
   printf("%s", buffer);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

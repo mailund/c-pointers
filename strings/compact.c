@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -34,7 +33,7 @@ void compact_words(char *s)
   copy_words(s, s);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   // We modify the string we wordize, so we
   // cannot use a literate string. Those are immutable
@@ -50,5 +49,5 @@ int main(int argc, char **argv)
   compact_words(string);
   printf("'%s'\n", string);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

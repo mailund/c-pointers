@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
@@ -43,12 +42,12 @@ bool next_word(struct word_iter *iter,
   return true;
 }
 
-void dealloc_word_iter(struct word_iter *iter)
+void cleanup_word_iter(struct word_iter *iter)
 {
   *iter->x = iter->replaced;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   // We modify the string we wordize, so we
   // cannot use a literate string. Those are immutable
@@ -73,5 +72,5 @@ int main(int argc, char **argv)
   // We have restored the string to its original shape
   assert(strcmp(string, orig_string) == 0);
 
-  return EXIT_SUCCESS;
+  return 0;
 }
