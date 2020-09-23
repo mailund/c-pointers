@@ -1,54 +1,48 @@
-#include <stdio.h>
+#include <assert.h>
 
-void array_full_size(int A[10][10], const char *name)
+void array_full_size(int A[10][10])
 {
-  printf("full: sizeof(%s) == %zu (%zu), ",
-         name, sizeof(A), sizeof(int (*)[10]));
-  printf("sizeof(*%s) == %zu (%zu)\n",
-         name, sizeof(*A), 10 * sizeof(int));
+  // A becomes a pointer to length 10 arrays
+  assert(sizeof(A) == sizeof(int (*)[10]));
+  assert(sizeof(*A) == 10 * sizeof(int));
 }
 
-void array_incomplete_size(int A[][10], const char *name)
+void array_incomplete_size(int A[][10])
 {
-  printf("incomplete: sizeof(%s) == %zu (%zu), ",
-         name, sizeof(A), sizeof(int (*)[10]));
-  printf("sizeof(*%s) == %zu (%zu)\n",
-         name, sizeof(*A), 10 * sizeof(int));
+  // A becomes a pointer to length 10 arrays
+  assert(sizeof(A) == sizeof(int (*)[10]));
+  assert(sizeof(*A) == 10 * sizeof(int));
 }
 
-void pointer(int (*A)[10], const char *name)
+void pointer(int (*A)[10])
 {
-  printf("pointer: sizeof(%s) == %zu (%zu), ",
-         name, sizeof(A), sizeof(int (*)[10]));
-  printf("sizeof(*%s) == %zu (%zu)\n",
-         name, sizeof(*A), 10 * sizeof(int));
+  // A is explicitly a pointer to length 10 arrays
+  assert(sizeof(A) == sizeof(int (*)[10]));
+  assert(sizeof(*A) == 10 * sizeof(int));
 }
 
 int main(void)
 {
   int A[10][10];
-  printf("main: sizeof(A) == %zu\n", sizeof(A));
-  array_full_size(A, "A");
-  array_incomplete_size(A, "A");
-  pointer(A, "A");
-  printf("\n");
+  assert(sizeof(A) == 10 * 10 * sizeof(int));
+  array_full_size(A);
+  array_incomplete_size(A);
+  pointer(A);
 
   int B[5][10];
-  printf("main: sizeof(B) == %zu\n", sizeof(B));
+  assert(sizeof(B) == 5 * 10 * sizeof(int));
   // B's first dimension is wrong, but no warnings
-  array_full_size(B, "B");
-  array_incomplete_size(B, "B");
-  pointer(B, "B");
-  printf("\n");
+  array_full_size(B);
+  array_incomplete_size(B);
+  pointer(B);
 
   int C[10][5];
-  printf("main: sizeof(C) == %zu\n", sizeof(C));
+  assert(sizeof(C) == 10 * 5 * sizeof(int));
   // You get warnings here, because the
   // second dimension doesn't match
-  array_full_size(C, "C");
-  array_incomplete_size(C, "C");
-  pointer(C, "C");
-  printf("\n");
+  array_full_size(C);
+  array_incomplete_size(C);
+  pointer(C);
 
   return 0;
 }
