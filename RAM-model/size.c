@@ -1,7 +1,6 @@
-#include <stdlib.h>
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   char c;
   printf("%zu %zu\n", sizeof(char), sizeof(c));
@@ -9,5 +8,5 @@ int main(int argc, char **argv)
   printf("%zu %zu\n", sizeof(int), sizeof(i));
   double d;
   printf("%zu %zu\n", sizeof(double), sizeof(d));
-  return EXIT_SUCCESS;
+  return 0;
 }

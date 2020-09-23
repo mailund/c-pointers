@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 int f(int *i, long *l)
 {
@@ -15,12 +14,12 @@ int g(char *c, long *l)
   return *c;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   long x;
   int i = f((int *)&x, &x);
   int j = g((char *)&x, &x);
   printf("%ld %d %d\n", x, i, j);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

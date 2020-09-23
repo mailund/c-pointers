@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int i = 42;
   int *ip = &i;
@@ -12,5 +11,5 @@ int main(int argc, char **argv)
     printf("*ip == %d, *cp == %d\n", *ip, *cp);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

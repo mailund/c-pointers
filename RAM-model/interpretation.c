@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
  printf("sizes: double = %zu, long = %zu, int = %zu, char = %zu\n",
         sizeof(double), sizeof(long), sizeof(int), sizeof(char));
@@ -25,5 +24,5 @@ int main(int argc, char **argv)
  printf("*dp == %.20f, *lp == %ld, *ip == %d, *cp == %d\n",
         *dp, *lp, *ip, *cp);
 
- return EXIT_SUCCESS;
+ return 0;
 }

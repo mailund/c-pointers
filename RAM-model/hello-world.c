@@ -1,8 +1,7 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, const char **argv)
+int main(void)
 {
   printf("Hello, world\n");
-  return EXIT_SUCCESS;
+  return 0;
 }

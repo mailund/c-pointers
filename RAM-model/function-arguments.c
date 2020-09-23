@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 void doesnt_mutate(int i)
 {
@@ -43,7 +42,7 @@ void bar(int **ip)
   (*ip)++;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int i = 0;
   doesnt_mutate(i);
@@ -52,7 +51,7 @@ int main(int argc, char **argv)
   printf("i is %d\n", i);
 
   struct point point;
-  set_point(point, 13.0, 42.0);
+  set_point(point, 13.0, 42.0); // you might get a warning here.
   printf("point = (%f,%f)\n", point.x, point.y);
   set_point_(&point, 13.0, 42.0);
   printf("point = (%f,%f)\n", point.x, point.y);
@@ -65,5 +64,5 @@ int main(int argc, char **argv)
   bar(&ip);
   printf("%p\n", ip);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

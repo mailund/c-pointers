@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 int little_endianess(int i)
 {
@@ -23,12 +22,12 @@ int big_endianess(int i)
   return result;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   for (int i = 0; i < 10; i++) {
     printf("%d: little = %d, big = %d\n",
            i, little_endianess(i), big_endianess(i));
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

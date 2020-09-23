@@ -1,6 +1,4 @@
-
 #include <stdio.h>
-#include <stdlib.h>
 
 void abc(int *a, int *b, int *c)
 {
@@ -14,9 +12,9 @@ void abc_restrict(int *a, int *b, int * restrict c)
   *b += *c;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
-  int a, b, c;
+  int a, b;
   a = b = 13;
   abc(&a, &b, &a);
   printf("%d %d\n", a, b);
@@ -26,5 +24,5 @@ int main(int argc, char **argv)
   printf("%d %d\n", a, b);
 
 
-return EXIT_SUCCESS;
+return 0;
 }

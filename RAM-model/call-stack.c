@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 /*  1 */ int factorial(int n)
@@ -19,8 +18,8 @@
 /* 15 */  }
 /* 16 */ }
 
-/* 17 */ int main(int argc, char **argv)
+/* 17 */ int main(void)
 /* 18 */ {
 /* 19 */   print_factorial(4);
-/* 20 */   return EXIT_SUCCESS;
+/* 20 */   return 0;
 /* 21 */ }

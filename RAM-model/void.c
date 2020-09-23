@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -18,7 +17,7 @@ int string_compare(const void *x, const void *y)
   return strcmp(*a, *b);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int int_array[] = { 10, 5, 30, 15, 20, 30 };
   int int_array_length = sizeof(int_array) / sizeof(int);
@@ -40,5 +39,5 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }

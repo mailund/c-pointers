@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 void safe(int *ip)
 {
@@ -12,7 +11,7 @@ int *unsafe(void)
   return &i;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int *ip = unsafe();
   printf("*ip == %d\n", *ip);
@@ -22,5 +21,5 @@ int main(int argc, char **argv)
 
   printf("*ip == %d\n", *ip);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

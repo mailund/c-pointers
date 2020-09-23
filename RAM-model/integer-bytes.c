@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
 
   int a[] = { 1, 2, 3, 4, 5 };
@@ -16,5 +15,5 @@ int main(int argc, char **argv)
     printf("]\n");
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,6 +1,4 @@
-#include <stdlib.h>
-
-int main(int argc, char **argv)
+int main(void)
 {
   const int i = 13;
   // i = 42; <- This is an error, i is const
@@ -42,5 +40,5 @@ int main(int argc, char **argv)
   // We cannot change kp itself either
   // kp = &k; <- This is an error
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 void f1(void)
@@ -120,7 +119,7 @@ void f5(void)
   printf("---------------------------------\n\n");
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   f1();
   f2();
@@ -139,7 +138,6 @@ int main(int argc, char **argv)
   foo(&i);
   foo(&j);
   printf("i == %d, j == %d\n", i, j);
-  
 
-  return EXIT_SUCCESS;
+  return 0;
 }
