@@ -40,6 +40,5 @@ int main(void)
   assert(p_A1[0] == A[1][0]);
   assert(p_A1[1] == A[1][1]);
 
-
   return 0;
 }
