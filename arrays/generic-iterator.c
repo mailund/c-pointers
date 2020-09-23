@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 struct array_iter {
@@ -30,7 +29,7 @@ void cleanup_array_iter(struct array_iter *iter)
   // Nothing to do
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[] = { 1, 2, 3 };
   int n = sizeof(array) / sizeof(*array);
@@ -44,7 +43,7 @@ int main(int argc, char **argv)
   }
   cleanup_array_iter(&iter);
 
-  init_array_iter(&iter, array, 
+  init_array_iter(&iter, array,
                   n * sizeof(int),
                   sizeof(char));
   while (next_element(&iter, &element)) {
@@ -52,5 +51,5 @@ int main(int argc, char **argv)
   }
   cleanup_array_iter(&iter);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

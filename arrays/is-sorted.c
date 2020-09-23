@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -35,7 +34,7 @@ bool is_sorted(const void *array,
   return true;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int int_array[] = { 10, 5, 30, 15, 20, 30 };
   int int_array_length = sizeof(int_array) / sizeof(int);
@@ -71,5 +70,5 @@ int main(int argc, char **argv)
     printf("string_array is not sorted\n");
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

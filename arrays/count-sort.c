@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 void sort_chars(int n, unsigned char array[n])
 {
@@ -22,7 +20,7 @@ void sort_chars(int n, unsigned char array[n])
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   unsigned char array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
   int n = sizeof(array) / sizeof(char);
@@ -33,5 +31,5 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }

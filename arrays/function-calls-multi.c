@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 void array_full_size(int A[10][10], const char *name)
@@ -25,7 +24,7 @@ void pointer(int (*A)[10], const char *name)
          name, sizeof(*A), 10 * sizeof(int));
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int A[10][10];
   printf("main: sizeof(A) == %zu\n", sizeof(A));
@@ -51,5 +50,5 @@ int main(int argc, char **argv)
   pointer(C, "C");
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }

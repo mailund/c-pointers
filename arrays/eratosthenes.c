@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 int compact0(int n, int array[n])
@@ -123,7 +122,7 @@ void print_array(int *begin, int *end)
   printf("\n");
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int n = 100;
   int buf[n - 2];
@@ -137,5 +136,5 @@ int main(int argc, char **argv)
   m = eratosthenes___(n, buf);
   print_array(buf, buf + m);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

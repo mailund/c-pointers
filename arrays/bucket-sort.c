@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 void compute_buckets(int n, char *array[n], int buckets[256])
 {
@@ -31,7 +30,7 @@ void sort_strings(int n, char *input[n], char *output[n])
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   char *array[] = {
     "foo", "boo", "bar", "qoo", "qar", "baz", "qux", "qaz"
@@ -45,5 +44,5 @@ int main(int argc, char **argv)
     printf("%s\n", output[i]);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

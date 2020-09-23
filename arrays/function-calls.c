@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 void pointer(int *a)
@@ -49,7 +48,7 @@ void indirect_pointer_to_array(int n, int (*array)[1])
   pointer_to_array(array); // Warning, ok bcause 1 < 3
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int n = 100;
   int a[n]; a[0] = 42;
@@ -80,5 +79,5 @@ int main(int argc, char **argv)
   indirect_pointer_to_array(2, b);
 
 
-  return EXIT_SUCCESS;
+  return 0;
 }

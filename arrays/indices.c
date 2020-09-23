@@ -1,8 +1,7 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[5] = { 0, 1, 2, 3, 4 };
   int *ip = array;
@@ -37,5 +36,5 @@ int main(int argc, char **argv)
     printf("%p\n", p);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

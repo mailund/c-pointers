@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 int main(int argc, char **argv)
 {
   int array[5];
@@ -13,5 +11,5 @@ int main(int argc, char **argv)
     y += a2[i];
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }
