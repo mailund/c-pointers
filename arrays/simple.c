@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 
 void add_array(int n, int array[n], int x)
@@ -79,7 +78,7 @@ void print_array(int n, int array[n])
   printf("]\n");
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[] = { 1, 2, 3, 4, 5 };
   int n = sizeof(array) / sizeof(array[0]);
@@ -99,5 +98,5 @@ int main(int argc, char **argv)
   reverse_pointers(array, array + n);
   print_array(n, array);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

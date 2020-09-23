@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -12,7 +11,7 @@ void not_what_you_want(int array[])
   printf("%p %p\n", array, &array);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[] = { 1, 2, 3, 4, 5 };
   int *ap = array;
@@ -29,5 +28,5 @@ int main(int argc, char **argv)
     assert(*(array + i) == *(ap + i));
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

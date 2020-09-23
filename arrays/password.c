@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
@@ -17,15 +16,15 @@ bool validate_password(const char *password)
   return valid_password;
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *password = "foobar";
   bool valid = validate_password(password);
   if (valid) {
     printf("The password is valid\n");
-    return EXIT_FAILURE;
+    return 1;
   } else {
     printf("The password is invalid\n");
-    return EXIT_SUCCESS;
+    return 0;
   }
 }

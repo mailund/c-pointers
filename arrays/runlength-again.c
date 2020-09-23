@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
@@ -26,7 +25,7 @@ bool runlength_encode_n(const char *input, char *output, int n)
   return true; // Success
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *x = "aaaabbbbbbbaabbbcbbccccc";
   int n = 10;
@@ -40,5 +39,5 @@ int main(int argc, char **argv)
   }
   printf("Encoding: %s\n", buffer);
 
-  return EXIT_SUCCESS;
+  return 0;
 }

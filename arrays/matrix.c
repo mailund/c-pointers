@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 void mult(int n, int m, int l,
           double C[n][m],
@@ -27,7 +26,7 @@ void print_matrix(int n, int m, double A[n][m])
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   double A[2][3] = {
     { 1, 2, 3 },
@@ -43,6 +42,5 @@ int main(int argc, char **argv)
 
   print_matrix(2, 2, C);
 
-
-  return EXIT_SUCCESS;
+  return 0;
 }

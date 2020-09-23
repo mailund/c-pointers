@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -16,7 +15,7 @@ void reverse(void *array, int n, int size)
   }
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int int_array[] = { 1, 2, 3, 4, 5 };
   int n = sizeof(int_array) / sizeof(int);
@@ -33,5 +32,6 @@ int main(int argc, char **argv)
     printf("%c ", char_array[i]);
   }
   printf("\n");
-  return EXIT_SUCCESS;
+
+  return 0;
 }

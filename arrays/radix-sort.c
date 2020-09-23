@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 
 void bucket_sort(int n, int offset,
@@ -107,7 +106,7 @@ void sort_int(int n, int array[n])
   radix_sort(n - m, array + m);
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
   int n = sizeof(array) / sizeof(array[0]);
@@ -124,5 +123,5 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }

@@ -1,7 +1,6 @@
-#include <stdlib.h>
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[10];
   int (*ap1)[] = &array;
@@ -22,5 +21,5 @@ int main(int argc, char **argv)
   printf("%p, sizeof *ip == %zu (%zu)\n",
          ip, sizeof(ip), sizeof(int *));
 
-  return EXIT_SUCCESS;
+  return 0;
 }

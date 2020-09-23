@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -10,7 +9,7 @@ bool string_copy_n(char *output, const char *input, int n)
   return !*input; // Did we reach the end?
 }
 
-int main(int argc, char **argv)
+int main(void)
 {
   const char *string = "hello, world\n";
 
@@ -26,5 +25,5 @@ int main(int argc, char **argv)
     printf("%s", buffer);
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

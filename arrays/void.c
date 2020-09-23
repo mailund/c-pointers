@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
@@ -14,5 +13,5 @@ int main(int argc, char **argv)
     printf("long: %p %p\n", lp + i, vp + i * sizeof(long));
   }
 
-  return EXIT_SUCCESS;
+  return 0;
 }

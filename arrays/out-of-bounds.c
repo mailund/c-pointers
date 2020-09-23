@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int n = 5;
   int buffer[n];
@@ -21,5 +20,5 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }

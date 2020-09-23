@@ -1,7 +1,6 @@
-#include <stdlib.h>
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int C[2][2][3] = {
     { { 1, 2, 3 }, {  4,  5,  6 } },
@@ -30,5 +29,5 @@ int main(int argc, char **argv)
   }
   printf("\n");
 
-  return EXIT_SUCCESS;
+  return 0;
 }
