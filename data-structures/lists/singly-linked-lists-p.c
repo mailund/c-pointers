@@ -12,35 +12,18 @@ struct link {
 struct link *new_link(int val, struct link *next)
 {
     struct link *link = malloc(sizeof(struct link));
-    if (!link) return 0;
     link->value = val;
     link->next = next;
     return link;
 }
 
-void free_list(struct link *list)
-{
-    while (list) {
-        // Remember next, we cannot get it
-        // after free(list)
-        struct link *next = list->next;
-        free(list);
-        list = next;
-    }
-}
-
 struct link *make_list(int n, int array[n])
 {
-    struct link *list = 0;
+    struct link *link = 0;
     for (int i = n - 1; i >= 0; i--) {
-      struct link *link = new_link(array[i], list);
-      if (!link) {
-        free_list(list);
-        return 0;
-      }
-      list = link;
+        link = new_link(array[i], link);
     }
-    return list;
+    return link;
 }
 
 void print_list(struct link *list)
@@ -53,6 +36,16 @@ void print_list(struct link *list)
     printf("]\n");
 }
 
+void free_list(struct link *list)
+{
+    while (list) {
+        // Remember next, we cannot get it
+        // after free(list)
+        struct link *next = list->next;
+        free(list);
+        list = next;
+    }
+}
 
 bool contains(struct link *list, int val)
 {
@@ -133,52 +126,21 @@ int main(int argc, char **argv)
   free_list(list);
 
   list = make_list(n, array);
-  if (!list) exit(1); // Just bail here
-
   printf("%d %d %d\n",
           contains(list, 0),
           contains(list, 3),
           contains(list, 6));
   free_list(list);
-  printf("\n");
-
-  printf("prepend/append\n");
+  
   list = make_list(n, array);
-  if (!list) exit(1); // Just bail here
-
-  // This is the natural way to write code...
   list = append(list, 6);
   list = prepend(list, 0);
-
-  // The error handling forces us to keep the old
-  // list around
-  struct link *new_list = append(list, 6);
-  if (!new_list) exit(1);
-  list = new_list;
-  new_list = prepend(list, 0);
-  if (!new_list) exit(1);
-  list = new_list;
-
   print_list(list);
-  free_list(list);
-  printf("\n");
-
-  printf("memory issues...\n");
-  list = make_list(n, array);
-  new_list = prepend(list, -1);
-  if (!new_list) exit(1);
-  struct link *list2 = new_list;
-
-  print_list(list);
-  print_list(list2);
-
+  struct link *list2 = prepend(list, -1);
   free_list(list);
   // WARNING WARNING WARNING!
   // Now, list2->next points to garbage!
   free(list2); // but we can delete just the link...
-  printf("\n");
-
-  return 0;
 
   list = make_list(n, array);
   list2 = make_list(n, array);
@@ -199,12 +161,12 @@ int main(int argc, char **argv)
   list = delete_value(list, 3);
   print_list(list);
   free_list(list);
-
+  
   list2 = delete_value(list, 1);
   // here, we deleted the link that list points to!
   // Therefore, we cannot call free_list(list);
   free_list(list2);
-
+  
   list = make_list(n, array);
   list = reverse(list);
   print_list(list);
