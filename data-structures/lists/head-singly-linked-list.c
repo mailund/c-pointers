@@ -1,12 +1,14 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <time.h>
+#include <stdbool.h>
 
 // fake malloc
 void * (*ml)(size_t) = malloc;
 void *fake_malloc(size_t size)
 {
-  if (rand() % 1000 == 0) {
+  if (rand() % 10 == 0) {
     return 0;
   } else {
     return ml(size);
@@ -14,8 +16,6 @@ void *fake_malloc(size_t size)
 }
 #define malloc fake_malloc
 
-// for contains
-#include <stdbool.h>
 
 struct link {
   int value;
@@ -34,26 +34,20 @@ struct link *new_link(int val, struct link *next)
 
 list *new_list(void)
 {
-  // It doesn't matter what val is
+  // It doesn't matter what val is since
   // we are not supposed to look at it.
   return new_link(0, 0);
 }
 
-void free_links(struct link *link)
-{
-  while (link) {
-      // Remember next, we cannot get it
-      // after free(list)
-      struct link *next = link->next;
-      free(link);
-      link = next;
-  }
-}
-
 void free_list(list *x)
 {
-  free_links(x->next);
-  x->next = 0;
+  while (x) {
+    // Remember next, we cannot get it
+    // after free(list)
+    struct link *next = x->next;
+    free(x);
+    x = next;
+  }
 }
 
 list *make_list(int n, int array[n])
@@ -61,17 +55,18 @@ list *make_list(int n, int array[n])
   list *x = new_list();
   if (!x) return 0;
 
-  struct link *links = 0;
+  // From here on, x is in a consistent state
+  // which means that we can free it if something
+  // bad happens
   for (int i = n - 1; i >= 0; i--) {
-    struct link *link = new_link(array[i], links);
+    struct link *link = new_link(array[i], x->next);
     if (!link) { // Allocation error -- clean up
-      free_list(links);
+      free_list(x);
       return 0;
     }
-    links = link;
+    x->next = link;
   }
 
-  x->next = links;
   return x;
 }
 
@@ -108,6 +103,8 @@ int prepend(list *x, int val)
 
 struct link *last_link(list *x)
 {
+  // When we start from x, there is always
+  // a link where we can get the next
   struct link *prev = x;
   while (prev->next) {
     prev = prev->next;
@@ -124,6 +121,11 @@ int append(list *x, int val)
   return 1;
 }
 
+// We don't delete y, but we empty it.
+// The caller must free it if he no longer
+// needs it. We could free it here, that
+// just changes the API. It is a design
+// choice.
 void concatenate(list *x, list *y)
 {
   struct link *last = last_link(x);
@@ -133,13 +135,17 @@ void concatenate(list *x, list *y)
 
 void delete_value(list *x, int val)
 {
+  // When we start from x, there is always
+  // a node with a next pointer.
   struct link *prev = x;
   struct link *link = x->next;
   while (link) {
     if (link->value != val) {
+      // Move to next...
       prev = link;
       link = link->next;
     } else {
+      // Delete and move to next
       struct link *next = link->next;
       free(link);
       prev->next = link = next;
@@ -149,8 +155,13 @@ void delete_value(list *x, int val)
 
 void reverse(list *x)
 {
+  // If x's next pointer is null, then it is
+  // an empty list which is already empty.
   if (!x->next) return;
 
+  // We have at least one link, so we can also
+  // get the first link's next (which may or may
+  // not be null).
   struct link *next = x->next->next;
   struct link *reversed = x->next;
   reversed->next = 0;
@@ -222,6 +233,10 @@ int main(void)
   concatenate(x, y);
   print_list(x);
   free_list(x);
+  // concatenate() doesn't free y, it only
+  // empties it
+  assert(y->next == 0);
+  free_list(y);
   printf("\n");
 
   printf("deleting values:\n");
