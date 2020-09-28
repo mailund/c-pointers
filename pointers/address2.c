@@ -1,7 +1,6 @@
-#include <stdlib.h>
 #include <stdio.h>
 
-int main(int argc, char **argv)
+int main(void)
 {
   int i = 1;
   int *pi = &i;
@@ -34,5 +33,5 @@ int main(int argc, char **argv)
   int x, *y;
   printf("%d %p\n", x, y);
 
-  return EXIT_SUCCESS;
+  return 0;
 }
