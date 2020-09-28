@@ -3,8 +3,8 @@
 
 void reverse(void *array, int n, int size)
 {
-  void *left = array;
-  void *right = array + size * (n - 1);
+  char *left = array;
+  char *right = array + size * (n - 1);
   char tmp[size];
 
   while (left < right) {

@@ -24,8 +24,8 @@ bool is_sorted(const void *array,
                compare_function cmp)
 {
   for (int i = 1; i < len; i++) {
-    const void *a = array + (i - 1) * obj_size;
-    const void *b = array + i * obj_size;
+    const void *a = (char *)array + (i - 1) * obj_size;
+    const void *b = (char *)array + i * obj_size;
     if (cmp(a, b) > 0) {
       // a is larger than b, so the array is not sorted
       return false;
@@ -37,34 +37,38 @@ bool is_sorted(const void *array,
 int main(void)
 {
   int int_array[] = { 10, 5, 30, 15, 20, 30 };
-  int int_array_length = sizeof(int_array) / sizeof(int);
+  int int_array_length =
+    sizeof(int_array) / sizeof(int_array[0]);
 
   if (is_sorted(int_array, int_array_length,
-                sizeof(int), int_compare)) {
+                sizeof(int_array[0]), int_compare)) {
     printf("int_array is sorted\n");
   } else {
     printf("int_array is not sorted\n");
   }
-  qsort(int_array, int_array_length, sizeof(int), int_compare);
+  qsort(int_array, int_array_length,
+        sizeof(int_array[0]), int_compare);
   if (is_sorted(int_array, int_array_length,
-                sizeof(int), int_compare)) {
+                sizeof(int_array[0]), int_compare)) {
     printf("int_array is sorted\n");
   } else {
     printf("int_array is not sorted\n");
   }
 
   char *string_array[] = { "foo", "bar", "baz" };
-  int string_array_length = sizeof(string_array) / sizeof(char *);
+  int string_array_length =
+    sizeof(string_array) / sizeof(string_array[0]);
 
   if (is_sorted(string_array, string_array_length,
-                sizeof(char *), string_compare)) {
+                sizeof(string_array[0]), string_compare)) {
     printf("string_array is sorted\n");
   } else {
     printf("string_array is not sorted\n");
   }
-  qsort(string_array, string_array_length, sizeof(char *), string_compare);
+  qsort(string_array, string_array_length,
+        sizeof(string_array[0]), string_compare);
   if (is_sorted(string_array, string_array_length,
-                sizeof(char *), string_compare)) {
+                sizeof(string_array[0]), string_compare)) {
     printf("string_array is sorted\n");
   } else {
     printf("string_array is not sorted\n");
