@@ -15,7 +15,7 @@ int main(void)
     assert(i[array] == i[ip]);
   }
 
-  void *p = array;
+  char *p = array;
   for (int i = 0; i < 5; i++) {
     printf("%p %p %p\n",
            // int array has the right offset
