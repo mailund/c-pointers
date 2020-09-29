@@ -1,11 +1,9 @@
 #include <stdio.h>
 
-
 struct data {
   int i;
   double d;
   char c;
-  
 };
 
 int main(void)
