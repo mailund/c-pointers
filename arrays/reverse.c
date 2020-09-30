@@ -4,7 +4,7 @@
 void reverse(void *array, int n, int size)
 {
   char *left = array;
-  char *right = array + size * (n - 1);
+  char *right = left + size * (n - 1);
   char tmp[size];
 
   while (left < right) {
