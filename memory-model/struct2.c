@@ -6,8 +6,6 @@ struct data {
   char c[9];
 };
 
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
 int main(void)
 {
   printf("sizeof components == %zu\n",

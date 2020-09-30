@@ -25,13 +25,6 @@ int main(void)
   pi = &i2;
   printf("i2 = %d, *pi = %d\n", i2, *pi);
 
-  *ppi = (int *)0x42;
-  printf("i = %d, pi = %p, ppi = %p\n", i, pi, ppi);
-
-  // do not! do *pi now.
-
-  int x, *y;
-  printf("%d %p\n", x, y);
 
   return 0;
 }
