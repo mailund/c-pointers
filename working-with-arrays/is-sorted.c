@@ -2,30 +2,30 @@
 #include <string.h>
 #include <stdbool.h>
 
-int int_compare(const void *x, const void *y)
+int int_compare(void const *x, void const *y)
 {
   // Get the objects, and interpret them as integers
-  int *a = (int *)x;
-  int *b = (int *)y;
+  int const *a = x;
+  int const *b = y;
   return *a - *b;
 }
 
 int string_compare(const void *x, const void *y)
 {
   // Get the objects and interpet them as strings
-  char **a = (char **)x;
-  char **b = (char **)y;
+  char * const *a = x;
+  char * const *b = y;
   return strcmp(*a, *b);
 }
 
-typedef int (*compare_function)(const void *, const void *);
-bool is_sorted(const void *array,
+typedef int (*compare_function)(void const *, void const *);
+bool is_sorted(void const *array,
                size_t len, size_t obj_size,
                compare_function cmp)
 {
   for (int i = 1; i < len; i++) {
-    const void *a = (char *)array + (i - 1) * obj_size;
-    const void *b = (char *)array + i * obj_size;
+    void const *a = (char *)array + (i - 1) * obj_size;
+    void const *b = (char *)array + i * obj_size;
     if (cmp(a, b) > 0) {
       // a is larger than b, so the array is not sorted
       return false;

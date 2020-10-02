@@ -3,16 +3,16 @@
 #include <assert.h>
 
 struct runlength_iter {
-  const char *x;
+  char const *x;
 };
 
 void init_runlength_iter(struct runlength_iter *iter,
-                         const char *x)
+                         char const *x)
 {
   iter->x = x;
 }
 
-const char *skip(const char *x, char c)
+char const *skip(char const *x, char c)
 {
   assert(c != '\0');
   while (*x == c) x++;
@@ -25,7 +25,7 @@ bool next_runlength(struct runlength_iter *iter,
   if (*iter->x == '\0') return false;
 
   *character = *iter->x;
-  const char *next = skip(iter->x, *character);
+  char const *next = skip(iter->x, *character);
   *length = next - iter->x;
   iter->x = next;
   return true;
@@ -38,7 +38,7 @@ void cleanup_runlength_iter(struct runlength_iter *iter)
 
 int main(void)
 {
-  const char *x = "aabaabbbcbcc";
+  char const *x = "aabaabbbcbcc";
 
   struct runlength_iter iter;
   char c; int length;

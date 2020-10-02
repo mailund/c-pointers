@@ -2,8 +2,8 @@
 
 void mult(int n, int m, int l,
           double C[n][m],
-          const double A[n][l],
-          const double B[l][m])
+          double const A[n][l],
+          double const B[l][m])
 {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {
@@ -16,7 +16,7 @@ void mult(int n, int m, int l,
   }
 }
 
-void print_matrix(int n, int m, double A[n][m])
+void print_matrix(int n, int m, double const A[n][m])
 {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < m; j++) {

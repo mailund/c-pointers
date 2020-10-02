@@ -17,7 +17,7 @@ char *find_word(char *x)
 
 int main(void)
 {
-  const char *words = "\tfoo!  bar\n\tbaz qux\n";
+  char const *words = "\tfoo!  bar\n\tbaz qux\n";
 
   char *x = find_word((char *)words);
   while (*x) {

@@ -44,7 +44,7 @@ void cleanup_word_iter(struct word_iter *iter)
 
 int main(void)
 {
-  const char *words = "\tfoo!  bar\n\tbaz qux\n";
+  char const *words = "\tfoo!  bar\n\tbaz qux\n";
 
   struct word_iter iter;
   init_word_iter(&iter, (char *)words);

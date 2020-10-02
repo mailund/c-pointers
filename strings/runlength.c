@@ -2,18 +2,18 @@
 #include <string.h>
 #include <assert.h>
 
-const char *skip(const char *x)
+char const *skip(char const *x)
 {
   char c = *x; assert(c != '\0');
   while (*x == c) x++;
   return x;
 }
 
-void runlength_encode(const char *input, char *output)
+void runlength_encode(char const *input, char *output)
 {
   while (*input) {
     char c = *input;
-    const char *next = skip(input);
+    char const *next = skip(input);
     int length = next - input;
     output += sprintf(output, "%d%c", length, c);
     input = next;
@@ -22,7 +22,7 @@ void runlength_encode(const char *input, char *output)
 
 int main(void)
 {
-  const char *x = "aaaabbbbbbbaabbbcbbccccc";
+  char char *x = "aaaabbbbbbbaabbbcbbccccc";
   char buffer[2 * strlen(x) + 1];
 
   runlength_encode(x, buffer);

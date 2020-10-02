@@ -12,7 +12,7 @@ int no_digits(int n)
 
 void neg_int_to_string(int n, char *s)
 {
-  static const char *digits = "0123456789";
+  char const *digits = "0123456789";
   for ( ; n ; n /= 10) {
     *s-- = digits[-(n % 10)];
   }
@@ -47,7 +47,7 @@ void neg_int_to_string_rev(int n, char *s)
 {
   // we need to remember the beginning for reversal
   char *front = s;
-  static const char *digits = "0123456789";
+  char const *digits = "0123456789";
   for ( ; n ; n /= 10) {
     *s++ = digits[-(n % 10)];
   }
@@ -69,7 +69,7 @@ void int_to_string_rev(int n, char *s)
 
 char *neg_int_to_string_(int n, char *s)
 {
-  static const char *digits = "0123456789";
+  char const *digits = "0123456789";
 
   if (n <= -10) {
     s = neg_int_to_string_(n / 10, s);
@@ -93,7 +93,7 @@ void int_to_string_(int n, char *s)
 
 void neg_int_to_string__(int n, char **s)
 {
-  static const char *digits = "0123456789";
+  char const *digits = "0123456789";
   if (n <= -10) {
     neg_int_to_string__(n / 10, s);
   }

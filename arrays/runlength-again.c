@@ -3,19 +3,19 @@
 #include <stdbool.h>
 #include <assert.h>
 
-const char *skip(const char *x)
+char const *skip(char const *x)
 {
   char c = *x; assert(c != '\0');
   while (*x == c) x++;
   return x;
 }
 
-bool runlength_encode_n(const char *input, char *output, int n)
+bool runlength_encode_n(char const *input, char *output, int n)
 {
   while (*input) {
     printf("n == %d\n", n);
     char c = *input;
-    const char *next = skip(input);
+    char const *next = skip(input);
     int length = next - input;
     int used = snprintf(output, n, "%d%c", length, c);
     output += used; n -= used;
@@ -27,7 +27,7 @@ bool runlength_encode_n(const char *input, char *output, int n)
 
 int main(void)
 {
-  const char *x = "aaaabbbbbbbaabbbcbbccccc";
+  char const *x = "aaaabbbbbbbaabbbcbbccccc";
   int n = 10;
   char buffer[n + 1];
 

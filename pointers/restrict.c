@@ -14,15 +14,19 @@ void abc_restrict(int *a, int *b, int * restrict c)
 
 int main(void)
 {
-  int a, b;
-  a = b = 13;
-  abc(&a, &b, &a);
-  printf("%d %d\n", a, b);
+  int x, y;
+  x = y = 13;
+  // No problem here. We haven't made any restrict
+  // promises
+  abc(&x, &y, &x);
+  printf("%d %d\n", x, y);
 
-  a = b = 13;
-  abc_restrict(&a, &b, &a);
-  printf("%d %d\n", a, b);
+  // We break the promise here by passing
+  // using &a both as argument a and c in
+  // in the function
+  x = y = 13;
+  abc_restrict(&x, &y, &x);
+  printf("%d %d\n", x, y);
 
-
-return 0;
+  return 0;
 }

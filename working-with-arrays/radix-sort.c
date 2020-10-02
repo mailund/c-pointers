@@ -2,7 +2,7 @@
 #include <assert.h>
 
 void bucket_sort(int n, int offset,
-                 const int input[n], int output[n])
+                 int const input[n], int output[n])
 {
   int buckets[256];
   for (int i = 0; i < 256; i++) {

@@ -38,7 +38,7 @@ int main(void)
   // We modify the string we wordize, so we
   // cannot use a literate string. Those are immutable
   // and if we try, the program will probably crash.
-  const char *orig_string = "\tfoo!  bar\n\tbaz qux\n";
+  char const *orig_string = "\tfoo!  bar\n\tbaz qux\n";
   char string[strlen(orig_string) + 1];
 
   copy_words((char *)orig_string, string);

@@ -4,8 +4,8 @@
 
 int main(void)
 {
-  const char *string = "hello, world!\n";
-  const char *cp = string;
+  char const *string = "hello, world!\n";
+  char const *cp = string;
   int n = strlen(string);
   for (int i = 0; i < n; i++) {
     assert(string[i] == cp[i]);

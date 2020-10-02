@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-bool validate_password(const char *password)
+bool validate_password(char const *password)
 {
   char buffer[10];
   bool valid_password = false;
@@ -18,7 +18,7 @@ bool validate_password(const char *password)
 
 int main(void)
 {
-  const char *password = "foobar";
+  char const *password = "foobar";
   bool valid = validate_password(password);
   if (valid) {
     printf("The password is valid\n");

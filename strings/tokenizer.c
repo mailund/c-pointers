@@ -50,11 +50,9 @@ void cleanup_word_iter(struct word_iter *iter)
 int main(void)
 {
   // We modify the string we wordize, so we
-  // cannot use a literate string. Those are immutable
-  // and if we try, the program will probably crash.
-  const char *orig_string = "\tfoo!  bar\n\tbaz qux\n";
-  char string[strlen(orig_string) + 1];
-  strcpy(string, orig_string);
+  // cannot use a literate string. A char
+  // array will do, though.
+  char string[] = "\tfoo!  bar\n\tbaz qux\n";
 
   // Setup iterator
   struct word_iter iter;
@@ -70,7 +68,7 @@ int main(void)
   cleanup_word_iter(&iter);
 
   // We have restored the string to its original shape
-  assert(strcmp(string, orig_string) == 0);
+  printf("\n\"%s\"\n", string);
 
   return 0;
 }
