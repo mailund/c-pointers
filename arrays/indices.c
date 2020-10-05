@@ -3,37 +3,36 @@
 
 int main(void)
 {
-  int array[5] = { 0, 1, 2, 3, 4 };
-  int *ip = array;
+  int array[] = { 0, 1, 2, 3, 4 };
+  int n = sizeof(array) / sizeof(array[0]);
+  int *jp = array;
 
   for (int i = 0; i < 5; i++) {
-    assert(array + i == ip + i);
-    assert(array[i] == ip[i]);
+    assert(array + i == jp + i);
+    assert(array[i] == jp[i]);
     assert(array[i] == *(array + i));
-    assert(ip[i] == *(ip + i));
+    assert(jp[i] == *(jp + i));
 
-    assert(i[array] == i[ip]);
+    assert(i[array] == i[jp]);
   }
 
-  char *p = array;
-  for (int i = 0; i < 5; i++) {
+  int *ip = array;
+  char *p = (char *)array;
+  for (int i = 0; i < n; i++) {
     printf("%p %p %p\n",
            // int array has the right offset
-           array + i,
+           (void *)(array + i),
            // int * has the right offset
-           ip + i,
+           (void *)(ip + i),
            // void * jumps in bytes...
-           p + i * sizeof(int));
+           (void *)(p + i * sizeof(int)));
   }
 
-  int *end = array + sizeof(array) / sizeof(int);
-  for (ip = array; ip < end; ip++) {
-    printf("%p\n", ip);
-  }
-
-  void *vend = (void *)end;
-  for (p = array; p < vend; p += sizeof(int)) {
-    printf("%p\n", p);
+  char *end = (char *)array + sizeof(array);
+  for (ip = array, p = (char *)array;
+       p != end;
+       ip++, p += sizeof(*ip)) {
+    printf("%p %p\n", (void *)ip, (void *)p);
   }
 
   return 0;
