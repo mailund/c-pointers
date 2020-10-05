@@ -23,10 +23,18 @@ int main(void)
   ic_p = ic_pc; // Ok, T * const => T * (T = U const)
 
   // Another layour of indirection
-  int **               i_p_p   = 0;
-  int const **         ic_p_p  = 0;
-  int * const *        i_pc_p  = 0;
-  int const * const *  ic_pc_p = 0;
+  #if 0
+    int **               i_p_p   = 0;
+    int const **         ic_p_p  = 0;
+    int * const *        i_pc_p  = 0;
+    int const * const *  ic_pc_p = 0;
+  #endif
+  typedef int * T;
+  typedef int const * U;
+  T *        i_p_p   = 0;
+  U *        ic_p_p  = 0;
+  T const *  i_pc_p  = 0;
+  U const *  ic_pc_p = 0;
   // plus the ones with const last, but they
   // are simply const versions and we learn
   // nothing new from them.

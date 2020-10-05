@@ -2,21 +2,19 @@
 
 int main(void)
 {
-  int *i_p;
-  int **i_p_p = &i_p;
-  int const ** ic_p_p = (int const **)i_p_p;
+  int *p = 0;
+  int const **q = 0;
+  int const i = 42;
 
-  int const ci = 42;
-  // I can assign to *ic_p_p because its type is
-  // int const *, and that is the type if &ci
-  *ic_p_p = &ci;
+  q = (int const **)&p;
+  *q = &i;
 
-  // but now I have an int alias to an int const!
-  printf("&ci == %p, *i_p == %p\n", (void *)&ci, (void *)i_p);
+  // Now I have an int alias to an int const!
+  printf("&i == %p, *p == %p\n", (void *)&i, (void *)p);
 
-  *i_p = 5; // DANGER: We are trying to change const int i to 5
+  *p = 5; // DANGER: We are trying to change const int i to 5
   // This may or may not actually change i. It is up to the C compiler
-  printf("ci == %d / %d\n", ci, *i_p);
+  printf("i == %d / %d\n", i, *p);
 
   return 0;
 }
