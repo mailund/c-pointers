@@ -45,6 +45,21 @@ size_t substr_len(substr s)
   return s.end - s.begin;
 }
 
+int substr_cmp(substr x, substr y)
+{
+  while (x.begin != x.end && y.begin != y.end) {
+    if (*x.begin < *y.begin) return -1;
+    if (*x.begin > *y.begin) return +1;
+    x.begin++; y.begin++;
+  }
+  // We've reached the end of one of the substrings.
+  // If they had the same length, they are equal,
+  // otherwise, the shorter string is the smallest
+  if (x.begin < x.end) return +1; // x is longer
+  if (y.begin < y.end) return -1; // y is longer
+  return 0; // the strings are equal
+}
+
 char *substr_copy(char *to, substr from)
 {
   while (from.begin != from.end) {
@@ -146,6 +161,13 @@ int main(void)
   char c = zero_term(ss);
   printf("%s\n", ss.begin);
   restore_term(ss, c);
+
+  printf("comparisons\n");
+  printf("aa vs a: %d\n", substr_cmp(as_substr("aa"), as_substr("a")));
+  printf("a vs aa: %d\n", substr_cmp(as_substr("a"), as_substr("aa")));
+  printf("aa vs ab: %d\n", substr_cmp(as_substr("aa"), as_substr("ab")));
+  printf("aa vs aa: %d\n", substr_cmp(as_substr("aa"), as_substr("aa")));
+  printf("\n");
 
   printf("iterating over words\n");
   char x[] = "\tfoo    bar123baz\nqux321";
