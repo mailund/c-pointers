@@ -60,6 +60,20 @@ int substr_cmp(substr x, substr y)
   return 0; // the strings are equal
 }
 
+void substr_rev(substr s)
+{
+  // We need to point at, not past, the last char
+  s.end--;
+  while (s.begin < s.end) {
+    // Swap
+    char x = *s.begin;
+    *s.begin = *s.end;
+    *s.end = x;
+    // increment to next pair
+    s.begin++ ; s.end--;
+  }
+}
+
 char *substr_copy(char *to, substr from)
 {
   while (from.begin != from.end) {
@@ -167,6 +181,30 @@ int main(void)
   printf("a vs aa: %d\n", substr_cmp(as_substr("a"), as_substr("aa")));
   printf("aa vs ab: %d\n", substr_cmp(as_substr("aa"), as_substr("ab")));
   printf("aa vs aa: %d\n", substr_cmp(as_substr("aa"), as_substr("aa")));
+  printf("\n");
+
+  printf("reverse\n");
+  do {
+    char x[] = "abc";
+    substr_rev(as_substr(x));
+    printf("%s\n", x);
+  } while(0);
+  do {
+    char x[] = "";
+    substr_rev(as_substr(x));
+    printf("%s\n", x);
+  } while(0);
+  do {
+    char x[] = "a";
+    substr_rev(as_substr(x));
+    printf("%s\n", x);
+  } while(0);
+  do {
+    char x[] = "ab";
+    substr_rev(as_substr(x));
+    printf("%s\n", x);
+  } while(0);
+
   printf("\n");
 
   printf("iterating over words\n");
