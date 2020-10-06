@@ -9,7 +9,8 @@ char const *skip(char const *x)
   return x;
 }
 
-void runlength_encode(char const *input, char *output)
+void runlength_encode(restrict char const *input,
+                      restrict char *output)
 {
   while (*input) {
     char c = *input;

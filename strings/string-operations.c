@@ -46,6 +46,12 @@ void string_copy___(char *output, char const *input)
   while ( (*output++ = *input++) ) ;
 }
 
+void string_copy____(char *output, const char *input) {
+    do {
+      *output++ = *input;
+    } while (*input++);
+}
+
 void reverse_string(char *s)
 {
   char *left = s;
@@ -64,6 +70,8 @@ int main(void)
   printf("The string has length %d, and we need %d chars to represent it\n", n, n + 1);
   char buffer[n + 1];
   string_copy___(buffer, string);
+  printf("%s", buffer);
+  string_copy____(buffer, string);
   printf("%s", buffer);
 
   reverse_string(buffer);

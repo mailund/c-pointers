@@ -32,10 +32,9 @@ void int_to_string(int n, char *s)
   neg_int_to_string(n, s);
 }
 
-void reverse_string(char *s)
+void reverse_string(char *left, char *right)
 {
-  char *left = s;
-  char *right = s + strlen(s) - 1;
+  right--; // move to the first included character
   for ( ; left < right; left++, right--) {
     char c = *left;
     *left = *right;
@@ -51,7 +50,8 @@ void neg_int_to_string_rev(int n, char *s)
   for ( ; n ; n /= 10) {
     *s++ = digits[-(n % 10)];
   }
-  reverse_string(front);
+  *s = '\0';
+  reverse_string(front, s);
 }
 
 void int_to_string_rev(int n, char *s)

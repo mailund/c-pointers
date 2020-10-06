@@ -10,7 +10,9 @@ char const *skip(char const *x)
   return x;
 }
 
-bool runlength_encode_n(char const *input, char *output, int n)
+bool runlength_encode_n(restrict char const *input,
+                        restrict char *output,
+                        int n)
 {
   while (*input) {
     printf("n == %d\n", n);

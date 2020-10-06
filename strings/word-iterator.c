@@ -1,7 +1,5 @@
 #include <stdio.h>
 #include <ctype.h>
-#include <stdbool.h>
-
 
 char *skip_word(char *x)
 {
@@ -17,44 +15,29 @@ char *find_word(char *x)
   return x;
 }
 
-struct word_iter {
-  char *next_word;
-};
+// NULL pointer instead of pointer to zero terminal
+#define NULLIFY(x) ((*x) ? x : 0)
+#define WORD_ITER_END 0
 
-void init_word_iter(struct word_iter *iter,
-                    char *string)
+char *first_word(char *x)
 {
-  iter->next_word = find_word(string);
+  return NULLIFY(find_word(x));
 }
 
-bool next_word(struct word_iter *iter,
-               char **word)
+char *next_word(char *x)
 {
-  if (*iter->next_word == '\0') return false;
-  *word = iter->next_word;
-  iter->next_word =
-    find_word(skip_word(iter->next_word));
-  return true;
-}
-
-void cleanup_word_iter(struct word_iter *iter)
-{
-  // We don't need to clean anything up here
+  return NULLIFY(find_word(skip_word(x)));
 }
 
 int main(void)
 {
   char const *words = "\tfoo!  bar\n\tbaz qux\n";
 
-  struct word_iter iter;
-  init_word_iter(&iter, (char *)words);
-
-  char *word;
-  while (next_word(&iter, &word)) {
-    printf("Current position: '%s'\n", word);
+  for (char *iter = first_word((char *)words);
+       iter != WORD_ITER_END;
+       iter = next_word(iter)) {
+    printf("Current position: '%s'\n", iter);
   }
-
-  cleanup_word_iter(&iter);
 
   return 0;
 }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include <stdbool.h>
 
 char *find_word(char *x)
 {
@@ -36,16 +35,11 @@ void compact_words(char *s)
 int main(void)
 {
   // We modify the string we wordize, so we
-  // cannot use a literate string. Those are immutable
-  // and if we try, the program will probably crash.
-  char const *orig_string = "\tfoo!  bar\n\tbaz qux\n";
-  char string[strlen(orig_string) + 1];
-
-  copy_words((char *)orig_string, string);
-  printf("'%s'\n", string);
-
-  strcpy(string, orig_string);
-
+  // cannot use a literate string. Those are immutable.
+  // This initialises a mutable buffer instead. The
+  // string is copied into the buffer, including the zero-
+  // terminal, when the buffer is initialised.
+  char string[] = "\tfoo!  bar\n\tbaz qux\n";
   compact_words(string);
   printf("'%s'\n", string);
 
