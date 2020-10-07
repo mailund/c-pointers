@@ -29,6 +29,13 @@ char *next_word(char *x)
   return NULLIFY(find_word(skip_word(x)));
 }
 
+char *find_integer(char *x)
+{
+  while (*x && !isnumber(*x))
+    x++;
+  return x;
+}
+
 char *skip_integer(char *x)
 {
   while (*x && isnumber(*x))
@@ -36,12 +43,6 @@ char *skip_integer(char *x)
   return x;
 }
 
-char *find_integer(char *x)
-{
-  while (*x && !isnumber(*x))
-    x++;
-  return x;
-}
 
 char *first_integer(char *x)
 {

@@ -4,8 +4,8 @@
 
 bool validate_password(char const *password)
 {
+  char valid_password = false;
   char buffer[10];
-  bool valid_password = false;
 
   printf("Password: ");
   gets(buffer);
