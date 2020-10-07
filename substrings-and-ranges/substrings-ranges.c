@@ -22,6 +22,15 @@ substr as_substr(char *s)
   };
 }
 
+char *from_substr(char *to, substr from)
+{
+  while (from.begin != from.end) {
+    *to++ = *from.begin++;
+  }
+  *to = '\0';
+  return to;
+}
+
 substr slice(char *s, int i, int j)
 {
   assert(i <= j);
@@ -72,15 +81,6 @@ void substr_rev(substr s)
     // increment to next pair
     s.begin++ ; s.end--;
   }
-}
-
-char *substr_copy(char *to, substr from)
-{
-  while (from.begin != from.end) {
-    *to++ = *from.begin++;
-  }
-  *to = '\0';
-  return to;
 }
 
 // Word iteration
@@ -134,7 +134,7 @@ void copy_words(char *from, char *to)
        word = next_word(word)) {
     if (sep) *to++ = sep;
     sep = ' '; // always space after the first
-    to = substr_copy(to, word);
+    to = from_substr(to, word);
   }
 }
 
@@ -169,7 +169,7 @@ int main(void)
   printf("%zu %zu\n", strlen(s), substr_len(ss));
 
   char buf[substr_len(ss) + 1];
-  substr_copy(buf, ss);
+  from_substr(buf, ss);
   printf("%s\n", buf);
 
   char c = zero_term(ss);
