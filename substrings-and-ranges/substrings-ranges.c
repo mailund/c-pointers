@@ -18,6 +18,11 @@ int is_null_substr(substr s)
   return s.begin == 0;
 }
 
+int empty_substr(substr x)
+{
+  return x.begin == x.end;
+}
+
 // Creating substr
 #define SUBSTR(b,e) \
   (substr){ .begin = (b), .end = (e) }
@@ -97,23 +102,12 @@ void substr_rev(substr s)
   char * restrict x = s.begin;
   char * restrict y = s.end - 1;
   for (; x < y; x++, y--) {
-    char c = *x; *x = *y; *y = c;
+    char c = *x; *x = *y; *y = c; // swap
   }
 }
 
-// The tests for overlaps and such is only valid,
-// according to the langauge standard, if the
-// substrings are ranges of the same buffer. Comparing
-// pointers into separately allocated memory gives no
-// guarantees. But it is the best we can do here...
 
-// Do they overlap with x on the left?
-// This is the only dangerous overlap when it comes to
-// copying from x to y
-int substr_left_overlaps(substr x, substr y)
-{
-  return x.begin < y.begin && x.end > y.begin;
-}
+#define MIN(a,b) (((a)<(b)) ? (a) : (b))
 
 // We write the charcters in from to to, but only
 // part of from if to is shorter than from. The caller
@@ -121,37 +115,29 @@ int substr_left_overlaps(substr x, substr y)
 // if that can be an issue
 substr copy_substr(substr to, substr from)
 {
-  char * restrict x = to.begin;
-  char * restrict y = from.begin;
-  while (x != to.end && y != from.end)
-    *x++ = *y++;
+  size_t n = MIN(substr_len(to), substr_len(from));
+  // copy right cannot handle empty strings, so bail out here
+  if (n == 0) return to;
 
-  // The to substring now goes from the character
-  // right after the copy and to the original end
-  return SUBSTR(x, to.end);
-}
-
-
-int empty_substr(substr x)
-{
-  return x.begin == x.end;
-}
-
-int substr_overlaps(substr x, substr y)
-{
-  // Empty strings do not overlap
-  if (empty_substr(x) || empty_substr(y))
-    return 0;
-
-  // Now both strings have begin < end, and they
-  // overlap if the left-most ends after the
-  // the right-most begins
-  if (x.begin < y.begin) {
-    return x.end > y.begin;
-  } else {
-    return y.end > x.begin;
+  if (to.begin < from.begin) { // copy left
+      char * restrict y = to.begin;
+      char * restrict x = from.begin, *xend = from.begin + n;
+      while (x < xend) {
+        *y++ = *x++;
+      }
+  } else { // copy right
+    char * restrict y = to.begin + n;
+    char * restrict x = from.begin + n, *xbeg = from.begin;
+    do {
+      *(--y) = *(--x);
+    } while (x > xbeg);
   }
+
+  return SUBSTR(to.begin + n, to.end);
 }
+
+
+
 
 // It is the caller's responsibility to check that
 // x and y have the same length and do not overlap
@@ -160,7 +146,7 @@ void swap_substr(substr x, substr y)
   char * restrict p = x.begin;
   char * restrict q = y.begin;
   for (; p != x.end && q != y.end; p++, q++) {
-    char c = *p; *p = *q; *q = c;
+    char c = *p; *p = *q; *q = c; // swap
   }
 }
 
@@ -170,17 +156,16 @@ int is_subrange(substr x, substr y)
   return y.begin <= x.begin && x.end <= y.end;
 }
 
-// Remove substr y from substr x, put the result
-// in to and return the updated substr.
+// Remove substr y from substr x.
 // It is the caller's responsibility to check that
 // y is a subrange of x.
-substr delete_substr(substr to, substr x, substr y)
+substr delete_substr(substr out, substr x, substr y)
 {
   substr before = SUBSTR(x.begin, y.begin);
   substr after = SUBSTR(y.end, x.end);
-  substr tmp = copy_substr(to, before);
+  substr tmp = copy_substr(out, before);
   tmp = copy_substr(tmp, after);
-  return SUBSTR(to.begin, tmp.begin);
+  return SUBSTR(out.begin, tmp.begin);
 }
 
 // With this one, remember that you are modifying
@@ -193,6 +178,39 @@ substr delete_substr_inplace(substr x, substr y)
   substr replacement = copy_substr(dest, after);
   return SUBSTR(x.begin, replacement.begin);
 }
+
+// Replace string x in z with the string in y.
+// It is the caller's responsibility to ensure that
+// x is a subrange of z and y is not contained
+// in out.
+substr replace_substr(substr out,
+                      substr z, substr x,
+                      substr y)
+{
+  substr tmp = out;
+  tmp = copy_substr(tmp, SUBSTR(z.begin, x.begin));
+  tmp = copy_substr(tmp, y);
+  tmp = copy_substr(tmp, SUBSTR(x.end, z.end));
+  return SUBSTR(out.begin, tmp.begin);
+}
+
+// It is the caller's responsibility to ensure that
+// x is a subrange of z and that y is not contained
+// in z.
+substr replace_substr_inplace(substr z, substr x,
+                              substr y)
+{
+  substr after = SUBSTR(x.end, z.end);
+  char *after_dest_beg =
+    MIN(x.begin + substr_len(y), z.end);
+  substr after_dest = SUBSTR(after_dest_beg, z.end);
+
+  char *end = copy_substr(after_dest, after).begin;
+  copy_substr(SUBSTR(x.begin, after_dest_beg), y);
+
+  return SUBSTR(z.begin, end);
+}
+
 
 // Find the first occurrence of the string y
 // in the string x. Return a NULL string if
@@ -275,7 +293,7 @@ substr next_occurrence(substr_iter *iter, substr s)
 }
 
 // FIXME: handle unequal length
-substr replace_substr(substr s, substr from, substr to)
+substr replace_all_occurrences(substr s, substr from, substr to)
 {
   substr_iter iter = s;
   for (substr match = next_occurrence(&iter, from);
@@ -338,91 +356,6 @@ int main(void)
 
   printf("\n");
 
-  // Overlaps
-  do {
-    char *s = "foobar";
-    // Empty strings do not overlap
-    substr x = slice(s, 0, 0);
-    substr y = slice(s, 0, 0);
-    assert(!substr_overlaps(x, y));
-  } while(0);
-  do {
-    char *s = "foobar";
-    // Empty strings do not overlap
-    substr x = slice(s, 0, 1);
-    substr y = slice(s, 0, 0);
-    assert(!substr_overlaps(x, y));
-    assert(!substr_overlaps(y, x));
-  } while(0);
-
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 0, 1);
-    substr y = slice(s, 0, 1);
-    assert(substr_overlaps(x, y));
-    assert(substr_overlaps(y, x));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 0, 5);
-    substr y = slice(s, 0, 5);
-    assert(substr_overlaps(x, y));
-    assert(substr_overlaps(y, x));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 0, 5);
-    substr y = slice(s, 5, 10);
-    assert(!substr_overlaps(x, y));
-    assert(!substr_overlaps(y, x));
-  } while(0);
-
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 1, 5);
-    substr y = slice(s, 3, 10);
-    assert(substr_overlaps(x, y));
-    assert(substr_overlaps(y, x));
-  } while(0);
-
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 1, 5);
-    substr y = slice(s, 3, 10);
-    assert(substr_left_overlaps(x, y));
-    assert(!substr_left_overlaps(y, x));
-  } while(0);
-
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 1, 5);
-    substr y = slice(s, 1, 5);
-    assert(is_subrange(x, y));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 3, 5);
-    substr y = slice(s, 1, 5);
-    assert(is_subrange(x, y));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 1, 3);
-    substr y = slice(s, 1, 5);
-    assert(is_subrange(x, y));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 0, 5);
-    substr y = slice(s, 1, 5);
-    assert(!is_subrange(x, y));
-  } while(0);
-  do {
-    char *s = "foobar";
-    substr x = slice(s, 1, 6);
-    substr y = slice(s, 1, 5);
-    assert(!is_subrange(x, y));
-  } while(0);
 
 
   // Copying
@@ -434,17 +367,7 @@ int main(void)
     substr z = copy_substr(x, y);
     assert(substr_len(z) == 0); // we copied all, so it should be empty
     printf("%s\n", z.end); // the rest of w, so bar
-  } while(0);
-  do {
-    char w[] = "foobar";
-    // This violates the left overlap, but the result is correct,
-    // it is fffbar (we are copying the first f to pos 1 and 2)
-    substr x = slice(w, 1, 3);
-    substr y = slice(w, 0, 3);
-    substr z = copy_substr(x, y);
-    assert(substr_len(z) == 0); // we copied all, so it should be empty
-    printf("%s\n", w);
-    printf("%s\n", z.end); // the rest of w, so bar
+    assert(strcmp(z.end, "bar") == 0);
   } while(0);
   do {
     char w[] = "foobar";
@@ -452,7 +375,9 @@ int main(void)
     substr y = slice(w, 3, 6);
     substr z = copy_substr(x, y);
     assert(substr_len(z) == 3); // bar is still there
+    assert(substr_cmp(z, as_substr("bar")) == 0);
     printf("%s\n", w); // barbar
+    assert(strcmp(w, "barbar") == 0);
     print_substr(z); printf("\n"); // bar
   } while(0);
   do {
@@ -462,8 +387,30 @@ int main(void)
     substr z = copy_substr(x, y);
     assert(substr_len(z) == 0); // we filled the input
     printf("%s\n", w); // baobar
+    assert(strcmp(w, "baobar") == 0);
   } while(0);
   printf("\n");
+
+  do {
+    char w[] = "foobar";
+    substr x = slice(w, 0, 3);
+    substr y = slice(w, 1, 4);
+    substr z = copy_substr(x, y);
+    assert(substr_len(z) == 0); // we filled the input
+    printf("%s\n", w); // oobbar
+    assert(strcmp(w, "oobbar") == 0);
+  } while(0);
+  do {
+    char w[] = "foobar";
+    substr x = slice(w, 1, 4);
+    substr y = slice(w, 0, 3);
+    substr z = copy_substr(x, y);
+    assert(substr_len(z) == 0); // we filled the input
+    printf("%s\n", w); // ffooar
+    assert(strcmp(w, "ffooar") == 0);
+  } while(0);
+  printf("\n");
+
 
   printf("swapping\n");
   do {
@@ -475,7 +422,7 @@ int main(void)
   } while(0);
   printf("\n");
 
-  printf("removing...\n");
+  printf("deleting...\n");
   do {
     char x_buf[] = "foobar", z_buf[] = "foobar";
     substr x = as_substr(x_buf);
@@ -485,11 +432,89 @@ int main(void)
     print_substr(x); printf(" -> ");
     substr res = delete_substr(z, x, y);
     print_substr(res); printf(" # "); print_substr(z); printf("\n");
-    
+
     print_substr(x); printf(" -> ");
     res = delete_substr_inplace(x, y);
     print_substr(res); printf(" # "); print_substr(x); printf("\n");
   } while(0);
+  printf("\n");
+
+  printf("replacing...\n");
+  do {
+    char out_buf[] = "foobarbazqux";
+    substr out = as_substr(out_buf);
+    char z_buf[] = "foobarbaz";
+    substr z = as_substr(z_buf);
+    substr x = find_occurrence(z, as_substr("bar"));
+    substr y = as_substr("qux");
+
+    print_substr(z); printf(" -> ");
+    substr res = replace_substr(out, z, x, y);
+    // fooquxbaz # fooquxbazqux
+    print_substr(res); printf(" # "); print_substr(out); printf("\n");
+
+  } while(0);
+  do {
+    char out_buf[] = "foobarbazqux";
+    substr out = as_substr(out_buf);
+    char z_buf[] = "foobarbaz";
+    substr z = as_substr(z_buf);
+    substr x = find_occurrence(z, as_substr("bar"));
+    substr y = as_substr("X");
+
+    print_substr(z); printf(" -> ");
+    substr res = replace_substr(out, z, x, y);
+    // fooXbaz # fooXbazazqux
+    print_substr(res); printf(" # "); print_substr(out); printf("\n");
+  } while(0);
+  do {
+    char out_buf[] = "foobarbazqux";
+    substr out = as_substr(out_buf);
+    char z_buf[] = "foobarbaz";
+    substr z = as_substr(z_buf);
+    substr x = find_occurrence(z, as_substr("bar"));
+    substr y = as_substr("XXXX");
+
+    print_substr(z); printf(" -> ");
+    substr res = replace_substr(out, z, x, y);
+    // fooXXXXbaz # fooXXXXazqux
+    print_substr(res); printf(" # "); print_substr(out); printf("\n");
+  } while(0);
+
+
+  do {
+    char z_buf[] = "foobarbazqux";
+    substr z = as_substr(z_buf);
+    substr x = find_occurrence(z, as_substr("bar"));
+    substr y = as_substr("qax");
+    substr res;
+
+    printf("starting string: %s\n", z_buf);
+
+    printf("inplace bar/qax -> ");
+    res = replace_substr_inplace(z, x, y);
+    // fooqaxbazqux # fooqaxbazqux
+    print_substr(res); printf(" # "); print_substr(z); printf("\n");
+    assert(substr_cmp(res, as_substr("fooqaxbazqux")) == 0);
+
+    printf("inplace foo/XXXX -> ");
+    x = slice(z_buf, 0, 2);
+    y = as_substr("XXXX");
+    res = replace_substr_inplace(z, x, y);
+
+    print_substr(res); printf(" # "); print_substr(z); printf("\n");
+    assert(substr_cmp(res, as_substr("XXXXoqaxbazq")) == 0);
+
+    printf("inplace XXXX/YYY -> ");
+    x = slice(z_buf, 0, 4);
+    y = as_substr("YYY");
+    res = replace_substr_inplace(z, x, y);
+
+    print_substr(res); printf(" # "); print_substr(z); printf("\n");
+    assert(substr_cmp(res, as_substr("YYYoqaxbazq")) == 0);
+    assert(substr_cmp(z, as_substr("YYYoqaxbazqq")) == 0);
+  } while(0);
+
   printf("\n");
 
   printf("iterating over words\n");
@@ -522,7 +547,7 @@ int main(void)
   }
   printf("\n");
 
-  replace_substr(as_substr(x), ba, as_substr("fo"));
+  replace_all_occurrences(as_substr(x), ba, as_substr("fo"));
   printf("%s\n", x);
 
 
