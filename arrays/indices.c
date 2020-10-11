@@ -4,7 +4,7 @@
 int main(void)
 {
   int array[] = { 0, 1, 2, 3, 4 };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
   int *jp = array;
 
   for (int i = 0; i < 5; i++) {
@@ -28,10 +28,10 @@ int main(void)
            (void *)(p + i * sizeof(int)));
   }
 
-  char *end = (char *)array + sizeof(array);
+  char *end = (char *)array + sizeof array;
   for (ip = array, p = (char *)array;
        p != end;
-       ip++, p += sizeof(*ip)) {
+       ip++, p += sizeof *ip) {
     printf("%p %p\n", (void *)ip, (void *)p);
   }
 

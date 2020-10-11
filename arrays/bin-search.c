@@ -17,7 +17,7 @@ int *bin_search(int *left, int *right, int x)
 int main(void)
 {
   int a[] = { 1, 2, 4 };
-  int n = sizeof(a) / sizeof(a[0]);
+  int n = sizeof a / sizeof *a;
 
   for (int i = 0; i < 6; i++) {
     int *res = bin_search(a, a + n, i);

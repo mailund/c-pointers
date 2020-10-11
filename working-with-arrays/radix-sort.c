@@ -37,18 +37,18 @@ void radix_sort(int n, int array[n])
   int *buffers[] = { array, helper };
   int bucket_input = 0;
 
-  for (int offset = 0; offset < sizeof(int); offset++) {
+  for (int offset = 0; offset < sizeof *array; offset++) {
     bucket_sort(n, offset,
                 buffers[bucket_input],
                 buffers[!bucket_input]);
     bucket_input = !bucket_input;
   }
 
-  // It is *very* unlikely that sizeof(int) is odd, but if
+  // It is *very* unlikely that sizeof an integer is odd, but if
   // it is, you need to move the results from helper
   // to array. I assume that we have an even number of bytes
   // because that is practically always true for int
-  assert(sizeof(int) % 2 == 0);
+  assert(sizeof *array % 2 == 0);
 }
 
 // Both left and right must point to legal addresses
@@ -109,7 +109,7 @@ void sort_int(int n, int array[n])
 int main(void)
 {
   int array[] = { -1, -2, 13, 12, 4, 4200, 13, 6, 14, -3, 42, 13 };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
 
   radix_sort(n, array);
   for (int i = 0; i < n; i++) {

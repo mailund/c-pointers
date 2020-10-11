@@ -81,7 +81,7 @@ void print_array(int n, int array[n])
 int main(void)
 {
   int array[] = { 1, 2, 3, 4, 5 };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
   add_array(n, array, 2);
   print_array(n, array);
 

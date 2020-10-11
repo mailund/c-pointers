@@ -7,10 +7,10 @@ int main(void)
     { 4, 5, 6 }
   };
 
-  assert(sizeof(A) == 2 * 3 * sizeof(int));
-  assert(sizeof(*A) == 3 * sizeof(int));
-  assert(sizeof(A[0]) == 3 * sizeof(int));
-  assert(sizeof(A[0][0]) == sizeof(int));
+  assert(sizeof A == 2 * 3 * sizeof(int));
+  assert(sizeof *A == 3 * sizeof(int));
+  assert(sizeof A[0] == 3 * sizeof(int));
+  assert(sizeof A[0][0] == sizeof(int));
 
   int *p = (int *)A;
   for (int i = 0; i < 2; i++) {
@@ -30,10 +30,10 @@ int main(void)
     { { 7, 8, 9 }, { 10, 11, 12 } }
   };
 
-  assert(sizeof(B) == 2 * 2 * 3 * sizeof(int));
-  assert(sizeof(B[0]) == 2 * 3 * sizeof(int));
-  assert(sizeof(B[0][0]) == 3 * sizeof(int));
-  assert(sizeof(B[0][0][0]) == sizeof(int));
+  assert(sizeof B == 2 * 2 * 3 * sizeof(int));
+  assert(sizeof B[0] == 2 * 3 * sizeof(int));
+  assert(sizeof B[0][0] == 3 * sizeof(int));
+  assert(sizeof B[0][0][0] == sizeof(int));
 
   p = (int *)B;
   for (int i = 0; i < 2; i++) {

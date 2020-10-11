@@ -2,22 +2,22 @@
 
 void pointer(int *a)
 {
-  printf("pointer: %zu %zu\n", sizeof(a), sizeof(*a));
+  printf("pointer: %zu %zu\n", sizeof a, sizeof *a);
 }
 
 void array(int a[])
 {
-  printf("array: %zu %zu\n", sizeof(a), sizeof(*a));
+  printf("array: %zu %zu\n", sizeof a, sizeof *a);
 }
 
 void array_with_size(int a[50])
 {
-  printf("array[50]: %zu %zu\n", sizeof(a), sizeof(*a));
+  printf("array[50]: %zu %zu\n", sizeof a, sizeof *a);
 }
 
 void array_with_parameter_size(int n, int a[n])
 {
-  printf("array[n]: %zu %zu\n", sizeof(a), sizeof(*a));
+  printf("array[n]: %zu %zu\n", sizeof a, sizeof *a);
 }
 
 void size_constrained(int a[static 4])
@@ -33,14 +33,14 @@ void indirect_size_constrained(int a[static 2])
 void pointer_to_array(int (*a)[3])
 {
   printf("*a: %zu = %zu x %zu\n",
-         sizeof(*a), sizeof(*a)/sizeof(**a), sizeof(**a));
+         sizeof *a, sizeof *a / sizeof **a, sizeof **a);
 }
 
 void pointer_to_array_n(int n, int (*a)[n])
 {
   printf("*a with n = %d: %zu = %zu x %zu\n",
-         n, sizeof(*a),
-         sizeof(*a)/sizeof(**a), sizeof(**a));
+         n, sizeof *a,
+         sizeof *a / sizeof **a, sizeof **a);
 }
 
 void indirect_pointer_to_array(int n, int (*array)[1])
@@ -55,7 +55,7 @@ int main(void)
   int b[2]; b[0] = 13;
   int *p = b;
 
-  printf("declared: %zu %zu\n", sizeof(a), sizeof(*a));
+  printf("declared: %zu %zu\n", sizeof a, sizeof *a);
   pointer(a);
   array(a);
   array_with_size(a); // Ok, 100 > 5

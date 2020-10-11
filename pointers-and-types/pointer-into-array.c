@@ -4,7 +4,7 @@
 int main(void)
 {
   int a[] = { 1, 2, 3, 4, 5 };
-  int n = sizeof(a) / sizeof(a[0]);
+  int n = sizeof a / sizeof *a;
 
   // get a pointer to the beginning of a
   int *ip = a;

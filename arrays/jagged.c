@@ -9,7 +9,7 @@ int main(void)
     (double[]){4, 5, 6}
   };
 
-  int n = sizeof(A) / sizeof(*A);
+  int n = sizeof A / sizeof *A;
   for (int i = 0; i < n; i++) {
     for (int j = 0; j <= i; j++) {
       printf("%2.2f ", A[i][j]);
@@ -17,19 +17,19 @@ int main(void)
     printf("\n");
   }
 
-  // not true: assert(sizeof(A) == 6 * sizeof(double));
-  assert(sizeof(A) == 3 * sizeof(double *));
-  assert(sizeof(A[0]) == sizeof(double *));
-  assert(sizeof(A[1]) == sizeof(double *));
-  assert(sizeof(A[2]) == sizeof(double *));
+  // not true: assert(sizeof A == 6 * sizeof(double));
+  assert(sizeof A == 3 * sizeof(double *));
+  assert(sizeof A[0] == sizeof(double *));
+  assert(sizeof A[1] == sizeof(double *));
+  assert(sizeof A[2] == sizeof(double *));
 
   double row0[] = {1};
   double row1[] = {2, 3};
   double row2[] = {4, 5, 6};
   double *B[] = { row0, row1, row2 };
 
-  assert(sizeof(B) == sizeof(A));
-  assert(sizeof(B[0]) == sizeof(A[0]));
+  assert(sizeof B == sizeof A);
+  assert(sizeof B[0] == sizeof A[0]);
 
   double **p_A = A;
   assert(p_A[0] == A[0]);

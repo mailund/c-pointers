@@ -35,7 +35,7 @@ int main(void)
   char *array[] = {
     "foo", "boo", "bar", "qoo", "qar", "baz", "qux", "qaz"
   };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
   char *output[n];
 
   sort_strings(n, array, output);

@@ -9,17 +9,17 @@ int main(void)
   int (*ap4)[20] = &array; // Warning
   int *ip = array;
 
-  printf("%p, sizeof array == %zu\n", array, sizeof(array));
+  printf("%p, sizeof array == %zu\n", (void *)array, sizeof array);
   // We cannot get sizeof *ap1, it is an incomplete type.
-  printf("%p\n", *ap1);
+  printf("%p\n", (void *)*ap1);
   printf("%p, sizeof *ap2 == %zu (%zu)\n",
-         *ap2, sizeof(*ap2), 10 * sizeof(int));
+         (void *)*ap2, sizeof *ap2, 10 * sizeof(int));
   printf("%p, sizeof *ap3 == %zu (%zu)\n",
-         *ap3, sizeof(*ap3), 5 * sizeof(int));
+         (void *)*ap3, sizeof *ap3, 5 * sizeof(int));
   printf("%p, sizeof *ap4 == %zu (%zu)\n",
-         *ap4, sizeof(*ap4), 20 * sizeof(int));
+         (void *)*ap4, sizeof *ap4, 20 * sizeof(int));
   printf("%p, sizeof *ip == %zu (%zu)\n",
-         ip, sizeof(ip), sizeof(int *));
+         (void *)ip, sizeof ip, sizeof(int *));
 
   return 0;
 }

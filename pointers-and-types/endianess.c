@@ -4,7 +4,7 @@ int little_endianess(int i)
 {
   char *cp = (char *)&i;
   int result = 0, coef = 1;
-  for (int j = 0; j < sizeof(int); j++) {
+  for (int j = 0; j < sizeof i; j++) {
     result += coef * cp[j];
     coef *= 256;
   }
@@ -15,7 +15,7 @@ int big_endianess(int i)
 {
   char *cp = (char *)&i;
   int result = 0, coef = 1;
-  for (int j = sizeof(int) - 1; j >= 0; j--) {
+  for (int j = sizeof i - 1; j >= 0; j--) {
     result += coef * cp[j];
     coef *= 256;
   }

@@ -7,7 +7,7 @@ int main(void)
   for (int i = 0; i < 5; i++) {
     printf("&array[%d] == %p\n", i, (void *)&array[i]);
   }
-  printf("sizeof(array) == %zu\n", sizeof(array));
+  printf("sizeof(array) == %zu\n", sizeof array);
   printf("5 * sizeof(int) == %zu\n", 5 * sizeof(int));
 
   return 0;

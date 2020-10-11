@@ -23,7 +23,7 @@ void sort_chars(int n, unsigned char array[n])
 int main(void)
 {
   unsigned char array[] = { 'f', 'o', 'o', 'b', 'a', 'r' };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
 
   sort_chars(n, array);
   for (int i = 0; i < n; i++) {

@@ -38,18 +38,18 @@ int main(void)
 {
   int int_array[] = { 10, 5, 30, 15, 20, 30 };
   int int_array_length =
-    sizeof(int_array) / sizeof(int_array[0]);
+    sizeof int_array / sizeof *int_array;
 
   if (is_sorted(int_array, int_array_length,
-                sizeof(int_array[0]), int_compare)) {
+                sizeof *int_array, int_compare)) {
     printf("int_array is sorted\n");
   } else {
     printf("int_array is not sorted\n");
   }
   qsort(int_array, int_array_length,
-        sizeof(int_array[0]), int_compare);
+        sizeof *int_array, int_compare);
   if (is_sorted(int_array, int_array_length,
-                sizeof(int_array[0]), int_compare)) {
+                sizeof *int_array, int_compare)) {
     printf("int_array is sorted\n");
   } else {
     printf("int_array is not sorted\n");
@@ -57,18 +57,18 @@ int main(void)
 
   char *string_array[] = { "foo", "bar", "baz" };
   int string_array_length =
-    sizeof(string_array) / sizeof(string_array[0]);
+    sizeof string_array / sizeof *string_array;
 
   if (is_sorted(string_array, string_array_length,
-                sizeof(string_array[0]), string_compare)) {
+                sizeof *string_array, string_compare)) {
     printf("string_array is sorted\n");
   } else {
     printf("string_array is not sorted\n");
   }
   qsort(string_array, string_array_length,
-        sizeof(string_array[0]), string_compare);
+        sizeof *string_array, string_compare);
   if (is_sorted(string_array, string_array_length,
-                sizeof(string_array[0]), string_compare)) {
+                sizeof *string_array, string_compare)) {
     printf("string_array is sorted\n");
   } else {
     printf("string_array is not sorted\n");

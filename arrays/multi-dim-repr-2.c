@@ -7,9 +7,9 @@ int main(void)
     { { 7, 8, 9 }, { 10, 11, 12 } }
   };
 
-  int dim1 = sizeof(C) / sizeof(C[0]);
-  int dim2 = sizeof(C[0]) / sizeof(C[0][0]);
-  int dim3 = sizeof(C[0][0]) / sizeof(C[0][0][0]);
+  int dim1 = sizeof C / sizeof C[0];
+  int dim2 = sizeof C[0] / sizeof C[0][0];
+  int dim3 = sizeof C[0][0] / sizeof C[0][0][0];
 
   printf("C dimensions %d x %d x %d\n", dim1, dim2, dim3);
 

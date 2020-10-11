@@ -10,9 +10,9 @@ union data {
 int main(void)
 {
   union data data;
-  printf("sizeof(data) == %zu\n", sizeof(data));
+  printf("sizeof(data) == %zu\n", sizeof data);
   printf("max size of components == %zu\n",
-         MAX(sizeof(data.c), sizeof(data.d)));
+         MAX(sizeof data.c, sizeof data.d));
 
   printf("data at   %p\n",(void *)&data);
   printf("data.c at %p\n", (void *)&data.c);

@@ -15,7 +15,7 @@ int main(void)
 
   int n = 10;
   char buffer[n];
-  bool all = string_copy_n(buffer, string, sizeof(buffer));
+  bool all = string_copy_n(buffer, string, sizeof buffer);
   if (all) {
     printf("We copied it all\n");
     printf("%s", buffer);
