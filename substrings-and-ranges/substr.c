@@ -99,15 +99,17 @@ void substr_rev(substr s)
 #define MIN(a,b) (((a)<(b)) ? (a) : (b))
 
 // We write the charcters in from to to, but only
-// part of from if to is shorter than from. The caller
-// is responsible for checking substr_left_verlaps(from, to)
-// if that can be an issue
+// part of from if to is shorter than from.
 substr copy_substr(substr to, substr from)
 {
   size_t n = MIN(substr_len(to), substr_len(from));
   // copy right cannot handle empty strings, so bail out here
   if (n == 0) return to;
 
+  // Technically, the comparison is only well defined if the pointers
+  // are into the same allocated buffer, but we are always allowed to
+  // test, and we do not care about the result if they are not in the
+  // same buffer, so it doesn't matter.
   if (to.begin < from.begin) { // copy left
       char * restrict y = to.begin;
       char * restrict x = from.begin, *xend = from.begin + n;
@@ -137,12 +139,6 @@ void swap_substr(substr x, substr y)
   for (; p != x.end && q != y.end; p++, q++) {
     char c = *p; *p = *q; *q = c; // swap
   }
-}
-
-// Is x a sub-range of y?
-int is_subrange(substr x, substr y)
-{
-  return y.begin <= x.begin && x.end <= y.end;
 }
 
 // Remove substr y from substr x.
@@ -190,31 +186,15 @@ substr replace_substr_inplace(substr z, substr x,
                               substr y)
 {
   substr after = SUBSTR(x.end, z.end);
-  char *after_dest_beg =
-    MIN(x.begin + substr_len(y), z.end);
-  substr after_dest = SUBSTR(after_dest_beg, z.end);
+  char *x_end = MIN(x.begin + substr_len(y), z.end);
+  substr after_dest = SUBSTR(x_end, z.end);
 
-  char *end = copy_substr(after_dest, after).begin;
-  copy_substr(SUBSTR(x.begin, after_dest_beg), y);
+  char *copy_end = copy_substr(after_dest, after).begin;
+  copy_substr(SUBSTR(x.begin, x_end), y);
 
-  return SUBSTR(z.begin, end);
+  return SUBSTR(z.begin, copy_end);
 }
 
-
-// Find the first occurrence of the string y
-// in the string x. Return a NULL string if
-// there isn't one.
-substr find_occurrence(substr x, substr y)
-{
-  int n = substr_len(y);
-  char *s = x.begin, *end = x.end - n;
-  for (; s < end; s++) {
-    if (strncmp(s, y.begin, n) == 0) {
-      return SUBSTR(s, s + n);
-    }
-  }
-  return NULL_SUBSTR;
-}
 
 // Word iteration
 char *skip_word(char *x)
@@ -268,6 +248,20 @@ substr compact_words(substr s)
 }
 
 
+// Find the first occurrence of the string y
+// in the string x. Return a NULL string if
+// there isn't one.
+substr find_occurrence(substr x, substr y)
+{
+  int n = substr_len(y);
+  char *s = x.begin, *end = x.end - n;
+  for (; s < end; s++) {
+    if (strncmp(s, y.begin, n) == 0) {
+      return SUBSTR(s, s + n);
+    }
+  }
+  return NULL_SUBSTR;
+}
 
 // Iterator for non-overlapping occurrences of s
 substr next_occurrence(substr_iter *iter, substr s)

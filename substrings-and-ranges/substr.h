@@ -41,9 +41,7 @@ int substr_cmp(substr x, substr y);
 void substr_rev(substr s);
 
 // We write the charcters in from to to, but only
-// part of from if to is shorter than from. The caller
-// is responsible for checking substr_left_verlaps(from, to)
-// if that can be an issue
+// part of from if to is shorter than from.
 substr copy_substr(substr to, substr from);
 
 // It is the caller's responsibility to check that
@@ -52,7 +50,7 @@ void swap_substr(substr x, substr y);
 
 // Remove substr y from substr x.
 // It is the caller's responsibility to check that
-// y is a subrange of x.
+// x is a subrange of out.
 substr delete_substr(substr out, substr x, substr y);
 
 // With this one, remember that you are modifying
@@ -74,16 +72,16 @@ substr replace_substr(substr out,
 substr replace_substr_inplace(substr z, substr x,
                               substr y);
 
-// Find the first occurrence of the string y
-// in the string x. Return a NULL string if
-// there isn't one.
-substr find_occurrence(substr x, substr y);
 
 substr next_word(substr_iter *iter);
 substr copy_words(substr to, substr from);
 substr compact_words(substr s);
 
 
+// Find the first occurrence of the string y
+// in the string x. Return a null-string if
+// there isn't one.
+substr find_occurrence(substr x, substr y);
 // Iterator for non-overlapping occurrences of s
 substr next_occurrence(substr_iter *iter, substr s);
 
