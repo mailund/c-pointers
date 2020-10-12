@@ -64,6 +64,7 @@ void swap_pointers(int *i, int *j)
 
 void reverse_pointers(int *begin, int *end)
 {
+  if (end <= begin) return;
   end--; // point to last element
   while (begin < end) {
     swap_pointers(begin++, end--);

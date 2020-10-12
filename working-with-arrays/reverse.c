@@ -3,6 +3,7 @@
 
 void reverse(void *array, int n, int size)
 {
+  if (n <= 0) return; // avoid right underflow
   char *left = array;
   char *right = left + size * (n - 1);
   char tmp[size];

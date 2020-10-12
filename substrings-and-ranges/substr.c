@@ -88,10 +88,22 @@ int substr_cmp(substr x, substr y)
 
 void substr_rev(substr s)
 {
+  if (empty_substr(s)) return;
   char * restrict x = s.begin;
   char * restrict y = s.end - 1;
   for (; x < y; x++, y--) {
     char c = *x; *x = *y; *y = c; // swap
+  }
+}
+
+// It is the caller's responsibility to check that
+// x and y have the same length and do not overlap
+void swap_substr(substr x, substr y)
+{
+  char * restrict p = x.begin;
+  char * restrict q = y.begin;
+  for (; p != x.end && q != y.end; p++, q++) {
+    char c = *p; *p = *q; *q = c; // swap
   }
 }
 
@@ -130,16 +142,6 @@ substr copy_substr(substr to, substr from)
 
 
 
-// It is the caller's responsibility to check that
-// x and y have the same length and do not overlap
-void swap_substr(substr x, substr y)
-{
-  char * restrict p = x.begin;
-  char * restrict q = y.begin;
-  for (; p != x.end && q != y.end; p++, q++) {
-    char c = *p; *p = *q; *q = c; // swap
-  }
-}
 
 // Remove substr y from substr x.
 // It is the caller's responsibility to check that

@@ -7,7 +7,7 @@ struct range {
 };
 
 typedef struct range substr;
-typedef substr substr_iter;
+typedef struct range substr_iter;
 
 // Creating substr
 #define SUBSTR(b,e) \

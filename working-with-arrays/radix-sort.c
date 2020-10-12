@@ -100,10 +100,15 @@ void reverse(int n, int array[n])
 
 void sort_int(int n, int array[n])
 {
+  if (n <= 0) return;
   int m = split(n, array);
-  radix_sort(m, array);
-  reverse(m, array);
-  radix_sort(n - m, array + m);
+  if (m > 0) {
+    radix_sort(m, array);
+    reverse(m, array);
+  }
+  if (m < n) {
+    radix_sort(n - m, array + m);  
+  }
 }
 
 int main(void)
