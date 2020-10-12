@@ -1,3 +1,4 @@
+
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
@@ -9,8 +10,8 @@ int main(void)
   char x[] = "\tfoo    bar123baz\nqux321";
   substr_iter iter = as_substr(x);
   for (substr word = next_word(&iter);
-  !null_substr(word);
-  word = next_word(&iter)) {
+       !null_substr(word);
+       word = next_word(&iter)) {
 
     print_substr(word); printf("\n");
 

@@ -83,7 +83,7 @@ substr compact_words(substr s);
 // there isn't one.
 substr find_occurrence(substr x, substr y);
 // Iterator for non-overlapping occurrences of s
-substr next_occurrence(substr_iter *iter, substr s);
+substr next_occurrence(substr_iter *iter, substr s, int overlaps);
 
 // FIXME: handle unequal length
 substr replace_all_occurrences(substr s, substr from, substr to);

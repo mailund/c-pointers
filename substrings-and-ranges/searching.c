@@ -10,16 +10,14 @@ int main(void)
     char x[] = "foobarbazqux";
     substr_iter iter = as_substr(x);
     substr ba = as_substr("ba");
-    for (substr word = next_occurrence(&iter, ba);
+    for (substr word = next_occurrence(&iter, ba, 0);
          !null_substr(word);
-         word = next_occurrence(&iter, ba)) {
+         word = next_occurrence(&iter, ba, 0)) {
 
       print_substr(word); printf("\n");
     }
     printf("\n");
 
-    replace_all_occurrences(as_substr(x), ba, as_substr("fo"));
-    printf("%s\n", x);
   } while(0);
 
   return 0;

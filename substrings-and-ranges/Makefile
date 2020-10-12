@@ -1,7 +1,7 @@
 
 tests = creation comparison reverse copying \
         delete-replace word-iterator \
-				searching
+				searching sort occurrences
 
 all: $(tests) run_all
 

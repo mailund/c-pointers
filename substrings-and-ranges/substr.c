@@ -3,17 +3,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-struct range {
-  char *begin;
-  char *end;
-};
-
-typedef struct range substr;
-typedef substr substr_iter;
-
-// Creating substr
-#define SUBSTR(b,e) \
-  (substr){ .begin = (b), .end = (e) }
+#include "substr.h"
 
 substr as_substr(char *s)
 {
@@ -28,11 +18,6 @@ substr slice(char *s, int i, int j)
   return SUBSTR(s + i, s + j);
 }
 
-// Use a null begin pointer as a special symbol
-static substr const NULL_SUBSTR = { .begin = 0 };
-#define null_substr(x)  ((x).begin == 0)
-#define empty_substr(x) ((x).begin == (x).end)
-#define substr_len(x)   ((x).end - (x).begin)
 
 // Creating a string from a substr.
 // The caller is responsible for ensuring that
@@ -141,8 +126,6 @@ substr copy_substr(substr to, substr from)
 
 
 
-
-
 // Remove substr y from substr x.
 // It is the caller's responsibility to check that
 // y is a subrange of x.
@@ -230,17 +213,23 @@ substr copy_words(substr to, substr from)
 {
   // remember where we started
   char *begin = to.begin;
+
   // sep is used to put spaces between
   // words but not before the first word
-  char sep = '\0';
+  substr sep = as_substr(""); // empty string
   substr_iter iter = from;
+
   for (substr word = next_word(&iter);
        !null_substr(word);
        word = next_word(&iter)) {
-    if (sep) *to.begin++ = sep;
-    sep = ' '; // always space after the first
+    to = copy_substr(to, sep);
     to = copy_substr(to, word);
+
+    // after the first iteration, sep should always
+    // be space
+    sep = as_substr(" ");
   }
+
   return SUBSTR(begin, to.begin);
 }
 
@@ -255,36 +244,29 @@ substr compact_words(substr s)
 // there isn't one.
 substr find_occurrence(substr x, substr y)
 {
-  int n = substr_len(y);
-  char *s = x.begin, *end = x.end - n;
+  int n = substr_len(x);
+  int m = substr_len(y);
+  if (m > n) return NULL_SUBSTR;
+
+  char *s = x.begin, *end = x.end - m;
   for (; s < end; s++) {
-    if (strncmp(s, y.begin, n) == 0) {
-      return SUBSTR(s, s + n);
+    if (strncmp(s, y.begin, m) == 0) {
+      return SUBSTR(s, s + m);
     }
   }
   return NULL_SUBSTR;
 }
 
 // Iterator for non-overlapping occurrences of s
-substr next_occurrence(substr_iter *iter, substr s)
+substr next_occurrence(substr_iter *iter,
+                       substr s,
+                       int overlaps)
 {
   substr occ = find_occurrence(*iter, s);
   if (!null_substr(occ)) {
     // if there was an occurrence, we must update
     // the iterator
-    iter->begin = occ.end;
+    iter->begin = overlaps ? occ.begin + 1 : occ.end;
   }
   return occ;
-}
-
-// FIXME: handle unequal length
-substr replace_all_occurrences(substr s, substr from, substr to)
-{
-  substr_iter iter = s;
-  for (substr match = next_occurrence(&iter, from);
-       !null_substr(match);
-       match = next_occurrence(&iter, from)) {
-    copy_substr(match, to);
-  }
-  return s; // FIXME
 }
