@@ -34,6 +34,7 @@ void int_to_string(int n, char *s)
 
 void reverse_string(char *left, char *right)
 {
+  if (right <= left) return; // avoid right underflow
   right--; // move to the first included character
   for ( ; left < right; left++, right--) {
     char c = *left;
