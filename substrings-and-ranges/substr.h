@@ -72,6 +72,12 @@ substr replace_substr(substr out,
 substr replace_substr_inplace(substr z, substr x,
                               substr y);
 
+// Insert substr y in substr x at index.
+// It is the caller's responsibility to check that
+// index is contined in x
+substr insert_substr(substr out, substr x, size_t index, substr y);
+substr insert_substr_inplace(substr x, size_t index, substr y);
+
 
 substr next_word(substr_iter *iter);
 substr copy_words(substr to, substr from);
@@ -84,8 +90,5 @@ substr compact_words(substr s);
 substr find_occurrence(substr x, substr y);
 // Iterator for non-overlapping occurrences of s
 substr next_occurrence(substr_iter *iter, substr s, int overlaps);
-
-// FIXME: handle unequal length
-substr replace_all_occurrences(substr s, substr from, substr to);
 
 #endif

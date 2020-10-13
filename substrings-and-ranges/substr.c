@@ -126,28 +126,7 @@ substr copy_substr(substr to, substr from)
 
 
 
-// Remove substr y from substr x.
-// It is the caller's responsibility to check that
-// y is a subrange of x.
-substr delete_substr(substr out, substr x, substr y)
-{
-  substr before = SUBSTR(x.begin, y.begin);
-  substr after = SUBSTR(y.end, x.end);
-  substr tmp = copy_substr(out, before);
-  tmp = copy_substr(tmp, after);
-  return SUBSTR(out.begin, tmp.begin);
-}
 
-// With this one, remember that you are modifying
-// x, so other references to it, and subtrings in it
-// will also be affected
-substr delete_substr_inplace(substr x, substr y)
-{
-  substr dest = SUBSTR(y.begin, x.begin);
-  substr after = SUBSTR(y.end, x.end);
-  substr replacement = copy_substr(dest, after);
-  return SUBSTR(x.begin, replacement.begin);
-}
 
 // Replace string x in z with the string in y.
 // It is the caller's responsibility to ensure that
@@ -157,11 +136,23 @@ substr replace_substr(substr out,
                       substr z, substr x,
                       substr y)
 {
-  substr tmp = out;
-  tmp = copy_substr(tmp, SUBSTR(z.begin, x.begin));
-  tmp = copy_substr(tmp, y);
-  tmp = copy_substr(tmp, SUBSTR(x.end, z.end));
-  return SUBSTR(out.begin, tmp.begin);
+  substr z_before   = SUBSTR(z.begin, x.begin);
+  substr z_after    = SUBSTR(x.end, z.end);
+
+  size_t ylen       = substr_len(y);
+  size_t outlen     = substr_len(out);
+  size_t x_beg_idx  = x.begin - z.begin;
+  size_t y_end_idx  = MIN(x_beg_idx + ylen, outlen);
+  substr out_before = SUBSTR(out.begin, out.begin + x_beg_idx);
+  substr out_after  = SUBSTR(out.begin + y_end_idx, out.end);
+  substr out_y      = SUBSTR(out.begin + x_beg_idx,
+                             out.begin + y_end_idx);
+
+  copy_substr(out_before, z_before);
+  char *ret_end = copy_substr(out_after, z_after).begin;
+  copy_substr(out_y, y);
+
+  return SUBSTR(out.begin, ret_end);
 }
 
 // It is the caller's responsibility to ensure that
@@ -170,16 +161,53 @@ substr replace_substr(substr out,
 substr replace_substr_inplace(substr z, substr x,
                               substr y)
 {
-  substr after = SUBSTR(x.end, z.end);
-  char *x_end = MIN(x.begin + substr_len(y), z.end);
-  substr after_dest = SUBSTR(x_end, z.end);
+  size_t zlen = substr_len(z);
+  size_t ylen = substr_len(y);
+  size_t x_beg_idx = x.begin - z.begin;
+  size_t y_end_idx = MIN(x_beg_idx + ylen, zlen);
+  char *y_end = z.begin + y_end_idx;
 
-  char *copy_end = copy_substr(after_dest, after).begin;
-  copy_substr(SUBSTR(x.begin, x_end), y);
+  substr in_after  = SUBSTR(x.end, z.end);
+  substr out_after = SUBSTR(y_end, z.end);
+  substr out_y     = SUBSTR(x.begin, y_end);
 
-  return SUBSTR(z.begin, copy_end);
+  char *ret_end = copy_substr(out_after, in_after).begin;
+  copy_substr(out_y, y);
+
+  return SUBSTR(z.begin, ret_end);
 }
 
+// Insert substr y in substr x at index.
+// It is the caller's responsibility to check that
+// index is contained in x
+substr insert_substr(substr out, substr x, size_t index, substr y)
+{
+  assert(index <= substr_len(x));
+  char *p = x.begin + index;
+  return replace_substr(out, x, SUBSTR(p, p), y);
+}
+
+// It is the caller's responsibility to check that
+// index is contained in x
+substr insert_substr_inplace(substr x, size_t index, substr y)
+{
+  assert(index < substr_len(x));
+  char *p = x.begin + index;
+  return replace_substr_inplace(x, SUBSTR(p, p), y);
+}
+
+// Delete substr y from substr x
+// It is the caller's responsibility to check that
+// y is contained in x
+substr delete_substr(substr out, substr x, substr y)
+{
+  return replace_substr(out, x, y, as_substr(""));
+}
+
+substr delete_substr_inplace(substr x, substr y)
+{
+  return replace_substr_inplace(x, y, as_substr(""));
+}
 
 // Word iteration
 char *skip_word(char *x)

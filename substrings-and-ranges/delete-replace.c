@@ -12,12 +12,19 @@ int main(void)
     substr z = as_substr(z_buf);
     substr y = slice(x_buf, 1, 3);
 
+    printf("deleting oo from %s\n", x.begin);
     print_substr(x); printf(" -> ");
     substr res = delete_substr(z, x, y);
     print_substr(res); printf(" # "); print_substr(z); printf("\n");
 
+    printf("then inserting XX at position zero.\n");
+    res = insert_substr(z, x, 0, as_substr("XX"));
+    print_substr(res); printf(" # "); print_substr(z); printf("\n");
+
     print_substr(x); printf(" -> ");
     res = delete_substr_inplace(x, y);
+    print_substr(res); printf(" # "); print_substr(x); printf("\n");
+    res = insert_substr_inplace(x, 0, as_substr("YY"));
     print_substr(res); printf(" # "); print_substr(x); printf("\n");
   } while(0);
   printf("\n");
@@ -80,7 +87,7 @@ int main(void)
     print_substr(res); printf(" # "); print_substr(z); printf("\n");
     assert(substr_cmp(res, as_substr("fooqaxbazqux")) == 0);
 
-    printf("inplace foo/XXXX -> ");
+    printf("inplace fo/XXXX -> ");
     x = slice(z_buf, 0, 2);
     y = as_substr("XXXX");
     res = replace_substr_inplace(z, x, y);
@@ -99,6 +106,15 @@ int main(void)
   } while(0);
 
   printf("\n");
+
+  printf("appending...\n");
+  do {
+    char x_buf[] = "foobar", z_buf[] = "foobarxxx";
+    substr x = as_substr(x_buf);
+    substr z = as_substr(z_buf);
+    substr res = insert_substr(z, x, substr_len(x), as_substr("QUX"));
+    print_substr(res); printf(" # "); print_substr(z); printf("\n");
+  } while(0);
 
   return 0;
 }
