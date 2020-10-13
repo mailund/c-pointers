@@ -77,3 +77,101 @@ char *join_strings(char const *sep, int n, char const *strings[n])
 
   return new_buf;
 }
+
+
+
+// using substrings
+
+struct range {
+  char *begin;
+  char *end;
+};
+
+typedef struct range substr;
+typedef struct range substr_iter;
+
+// Creating substr
+#define SUBSTR(b,e) \
+  (substr){ .begin = (b), .end = (e) }
+
+substr as_substr(char const *s)
+{
+  char *x = (char *)s;
+  while (*x) x++;
+  return SUBSTR((char *)s, x);
+}
+
+// Use a null begin pointer as a special symbol
+static substr const NULL_SUBSTR = { .begin = 0 };
+#define null_substr(x)  ((x).begin == 0)
+#define substr_len(x)   ((x).end - (x).begin)
+
+substr find_occurrence(substr x, substr y)
+{
+  int n = substr_len(x);
+  int m = substr_len(y);
+  if (m > n) return NULL_SUBSTR;
+
+  char *s = x.begin, *end = x.end - m;
+  for (; s < end; s++) {
+    if (strncmp(s, y.begin, m) == 0) {
+      return SUBSTR(s, s + m);
+    }
+  }
+  return NULL_SUBSTR;
+}
+
+// Iterator for non-overlapping occurrences of s
+substr next_occurrence(substr_iter *iter,
+                       substr s,
+                       int overlaps)
+{
+  substr occ = find_occurrence(*iter, s);
+  if (!null_substr(occ)) {
+    // if there was an occurrence, we must update
+    // the iterator
+    iter->begin = overlaps ? occ.begin + 1 : occ.end;
+  }
+  return occ;
+}
+
+#define range_copy(dst, begin, end)           \
+ { for (char const *p = begin; p != end; p++) \
+      *(dst)++ = *p;                          \
+ }
+
+char *replace_all_occurrences(char const *z, char const *x, char const *y)
+{
+  substr ssz = as_substr(z);
+  substr ssx = as_substr(x);
+  substr ssy = as_substr(y);
+  size_t zlen = substr_len(ssz);
+  size_t xlen = substr_len(ssx);
+  size_t ylen = substr_len(ssy);
+
+  size_t no_occurrences = 0;
+  substr_iter iter = ssz;
+  for (substr occ = next_occurrence(&iter, ssx, 0);
+       !null_substr(occ);
+       occ = next_occurrence(&iter, ssx, 0)) {
+    no_occurrences++;
+  }
+  size_t len = zlen + no_occurrences * (ylen - xlen);
+  char *new_buf = malloc(len + 1);
+  if (!new_buf) return 0;
+
+  char const *src = z;
+  char *dst = new_buf;
+  iter = ssz;
+  for (substr occ = next_occurrence(&iter, ssx, 0);
+       !null_substr(occ);
+       occ = next_occurrence(&iter, ssx, 0)) {
+    range_copy(dst, src, occ.begin);
+    range_copy(dst, ssy.begin, ssy.end);
+    src = occ.end;
+  }
+  range_copy(dst, src, z + zlen);
+  *dst = '\0';
+
+  return new_buf;
+}

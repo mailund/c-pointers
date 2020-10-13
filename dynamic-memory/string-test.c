@@ -38,5 +38,18 @@ int main(void)
   printf("z = %s\n", z);
   free(z);
 
+  x = "foobarbazbax";
+  z = replace_all_occurrences(x, "ba", "");
+  printf("z == %s\n", z);
+  free(z);
+
+  z = replace_all_occurrences(x, "a", "OOOO");
+  printf("z == %s\n", z);
+  free(z);
+
+  z = replace_all_occurrences(x, "123", "OOOO");
+  printf("z == %s\n", z);
+  free(z);
+
   return 0;
 }
