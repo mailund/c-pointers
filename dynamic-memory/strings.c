@@ -20,7 +20,10 @@ char *replace_string(char const *x, int i, int j, char const *y)
 {
   size_t xlen = strlen(x);
   size_t ylen = strlen(y);
-  size_t len = xlen - (j - i) + ylen;
+  size_t after_removal = xlen - (j - i);
+  // overflow test:
+  if (SIZE_MAX - after_removal - 1 < ylen) return 0;
+  size_t len = after_removal + ylen;
 
   char *new_buf = malloc(len + 1);
   if (!new_buf) return 0;
@@ -42,38 +45,37 @@ char *delete_string(char const *x, int i, int j)
   return replace_string(x, i, j, "");
 }
 
-// copies up to, but not including, the zero-terminal
-#define string_copy(dst, src) \
-{ while (*(src)) *(dst)++ = *(src)++; }
 
-char *join_strings(char const *sep, int n, char const *strings[n])
+char *join_strings(char const *sep,
+                   int n, char const *strings[n])
 {
-  if (n == 0) {
-    // We could consider this an error and return NULL.
-    // We could also return an empty string, but we would have to
-    // allocate it if we want the interface to this function to be
-    // that all strings it returns are dynamically allocated.
-    // I will go with the latter.
-    char *x = malloc(1);
-    if (x) *x = '\0';
-    return x;
+  size_t sep_len = strlen(sep);
+  size_t total_sep_len = 0;
+  if (n > 1) {
+    if (SIZE_MAX / (n - 1) - 1 < sep_len) return 0;
+    total_sep_len = (n - 1) * sep_len;
   }
 
-  size_t no_strings = 0, string_len = 0;
+  size_t len = total_sep_len + 1; // + 1 for zero
   for (int i = 0; i < n; i++) {
-    no_strings++;
-    string_len += strlen(strings[i]);
+    size_t string_len = strlen(strings[i]);
+    if (SIZE_MAX - len < string_len) return 0;
+    len += string_len;
   }
-  size_t len = string_len + (no_strings - 1 ) * strlen(sep);
-  char *new_buf = malloc(len + 1);
+  char *new_buf = malloc(len);
+  if (!new_buf) return 0;
+
+#define append_string(src) \
+    { for (char const *p = src; *p; p++) *dst++ = *p; }
   char *dst = new_buf;
   char const *xsep = "";
   for (int i = 0; i < n; i++) {
-    string_copy(dst, xsep);
-    string_copy(dst, strings[i]);
+    append_string(xsep);
+    append_string(strings[i]);
     xsep = sep;
   }
   *dst = '\0';
+#undef append_string
 
   return new_buf;
 }
@@ -94,7 +96,7 @@ typedef struct range substr_iter;
 #define SUBSTR(b,e) \
   (substr){ .begin = (b), .end = (e) }
 
-substr as_substr(char const *s)
+substr as_substr(char *s)
 {
   char *x = (char *)s;
   while (*x) x++;
@@ -135,43 +137,44 @@ substr next_occurrence(substr_iter *iter,
   return occ;
 }
 
-#define range_copy(dst, begin, end)           \
- { for (char const *p = begin; p != end; p++) \
-      *(dst)++ = *p;                          \
- }
-
-char *replace_all_occurrences(char const *z, char const *x, char const *y)
+char *replace_all_occurrences(char const *z,
+                              char const *x,
+                              char const *y)
 {
-  substr ssz = as_substr(z);
-  substr ssx = as_substr(x);
-  substr ssy = as_substr(y);
+  substr ssz = as_substr((char *)z);
+  substr ssx = as_substr((char *)x);
+  substr ssy = as_substr((char *)y);
   size_t zlen = substr_len(ssz);
   size_t xlen = substr_len(ssx);
   size_t ylen = substr_len(ssy);
 
-  size_t no_occurrences = 0;
+  // Compute the new string's length
+  size_t len = zlen + 1; // + 1 for terminal
   substr_iter iter = ssz;
   for (substr occ = next_occurrence(&iter, ssx, 0);
        !null_substr(occ);
        occ = next_occurrence(&iter, ssx, 0)) {
-    no_occurrences++;
+    if (SIZE_MAX - len - xlen < ylen) return 0;
+    len = len - xlen + ylen;
   }
-  size_t len = zlen + no_occurrences * (ylen - xlen);
-  char *new_buf = malloc(len + 1);
+  char *new_buf = malloc(len);
   if (!new_buf) return 0;
 
+#define copy_range(b, e) \
+{ for (char const *p = (b); p != (e); p++) *dst++ = *p; }
   char const *src = z;
   char *dst = new_buf;
   iter = ssz;
   for (substr occ = next_occurrence(&iter, ssx, 0);
        !null_substr(occ);
        occ = next_occurrence(&iter, ssx, 0)) {
-    range_copy(dst, src, occ.begin);
-    range_copy(dst, ssy.begin, ssy.end);
+    copy_range(src, occ.begin);
+    copy_range(ssy.begin, ssy.end);
     src = occ.end;
   }
-  range_copy(dst, src, z + zlen);
+  copy_range(src, z + zlen);
   *dst = '\0';
+#undef copy_range
 
   return new_buf;
 }
@@ -208,6 +211,13 @@ int main(void)
     "foo", "bar", "baz"
   };
   char *z = join_strings(":", sizeof strings / sizeof *strings, strings);
+  printf("z = %s\n", z);
+  free(z);
+
+  char const *strings2[] = {
+    "",
+  };
+  z = join_strings(":", sizeof strings2 / sizeof *strings2, strings2);
   printf("z = %s\n", z);
   free(z);
 

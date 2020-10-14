@@ -27,6 +27,7 @@ int main(void)
   if (x) {
     printf("success???\n");
   } else {
+    perror("Allocation error");
     printf("couldn't allocate %zu bytes.\n", SIZE_MAX);
   }
 

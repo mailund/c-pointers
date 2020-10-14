@@ -17,39 +17,45 @@ int strlen_pointer(char const *s)
   return x - s;
 }
 
-void string_copy(char *output, char const *input)
+char *string_copy(char *output, char const *input)
 {
   char const *x = input;
   char *y = output;
   for ( ; *x ; x++, y++ )
     *y = *x;
   *y = '\0';
+  return y;
 }
 
-void string_copy_(char *output, char const *input)
+char *string_copy_(char *output, char const *input)
 {
   while (*input) {
     *output++ = *input++;
   }
   *output = '\0';
+  return output;
 }
 
-void string_copy__(char *output, char const *input)
+char *string_copy__(char *output, char const *input)
 {
   while ( (*output = *input) ) {
     output++; input++;
   }
+  return output;
 }
 
-void string_copy___(char *output, char const *input)
+char *string_copy___(char *output, char const *input)
 {
   while ( (*output++ = *input++) ) ;
+  return output;
 }
 
-void string_copy____(char *output, const char *input) {
-    do {
-      *output++ = *input;
-    } while (*input++);
+char *string_copy____(char *output, const char *input)
+{
+  do {
+    *output++ = *input;
+  } while (*input++);
+  return output;
 }
 
 void reverse_string(char *s)
