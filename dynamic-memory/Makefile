@@ -1,5 +1,5 @@
 
-tests = malloc strings
+tests = malloc strings gapbuf
 
 all: $(tests)
 
