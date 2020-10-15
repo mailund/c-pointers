@@ -42,6 +42,7 @@ int da_resize(struct dynarray *da,
   da->data = new_data;
   da->size = new_size;
   da->used = MIN(da->used, new_size);
+  return 1; // success
 }
 
 #define capped_dbl_size(s) \

@@ -1,5 +1,6 @@
 
-tests = malloc calloc strings dynarray gapbuf
+tests = malloc calloc realloc \
+        strings dynarray gapbuf
 
 all: $(tests)
 
