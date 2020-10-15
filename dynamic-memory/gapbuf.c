@@ -44,14 +44,15 @@ int insert_character(struct gap_buf *buf, char c)
 
     // Move the segment to the right of the cursor
     size_t right_size = buf->size - buf->gap_end;
-    memmove(new_buf + new_size - right_size,
-            new_buf + buf->gap_end,
+    memmove(buf->buffer + new_size - right_size,
+            buf->buffer + buf->gap_end,
             right_size);
 
     // Update the bookkeeping
     buf->size = new_size;
     buf->gap_end = new_size - right_size;
   }
+  
   buf->buffer[buf->cursor++] = c;
   return 1; // success
 }

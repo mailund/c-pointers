@@ -16,23 +16,36 @@ char const *slice(char const *x, int i, int j)
   return new_buf;
 }
 
+#define size_check_inc(var,x)             \
+  { if (SIZE_MAX - (var) < (x))           \
+      goto error;                         \
+    (var) += (x);                         \
+  }
+#define size_check_inc_prod(var,x,y)      \
+  { if ((x) > 0 &&                        \
+        (SIZE_MAX - (var)) / (x) < (y))   \
+      goto error;                         \
+    (var) += (x) * (y);                   \
+  }
+
 char *replace_string(char const *x, int i, int j, char const *y)
 {
   size_t xlen = strlen(x);
   size_t ylen = strlen(y);
-  size_t after_removal = xlen - (j - i);
-  // overflow test:
-  if (SIZE_MAX - after_removal - 1 < ylen) return 0;
-  size_t len = after_removal + ylen;
+  size_t len = xlen - (j - i) + 1; // 1 for zero terminal
+  size_check_inc(len, ylen);
 
-  char *new_buf = malloc(len + 1);
-  if (!new_buf) return 0;
+  char *new_buf = malloc(len);
+  if (!new_buf) goto error;
 
   strncpy(new_buf, x, i);
   strcpy(new_buf + i, y);
   strcpy(new_buf + i + ylen, x + j);
 
   return new_buf;
+
+error:
+  return 0;
 }
 
 char *insert_string(char const *x, int i, char const *y)
@@ -45,25 +58,21 @@ char *delete_string(char const *x, int i, int j)
   return replace_string(x, i, j, "");
 }
 
-
 char *join_strings(char const *sep,
                    int n, char const *strings[n])
 {
+  size_t len = 1; // 1 for zero terminal
   size_t sep_len = strlen(sep);
-  size_t total_sep_len = 0;
-  if (n > 1) {
-    if (SIZE_MAX / (n - 1) - 1 < sep_len) return 0;
-    total_sep_len = (n - 1) * sep_len;
-  }
+  size_t reps = (n > 1) ? (n - 1) : 0;
+  size_check_inc_prod(len, sep_len, reps);
 
-  size_t len = total_sep_len + 1; // + 1 for zero
   for (int i = 0; i < n; i++) {
     size_t string_len = strlen(strings[i]);
-    if (SIZE_MAX - len < string_len) return 0;
-    len += string_len;
+    size_check_inc(len, string_len);
   }
+
   char *new_buf = malloc(len);
-  if (!new_buf) return 0;
+  if (!new_buf) goto error;
 
 #define append_string(src) \
     { for (char const *p = src; *p; p++) *dst++ = *p; }
@@ -78,6 +87,9 @@ char *join_strings(char const *sep,
 #undef append_string
 
   return new_buf;
+
+error:
+  return 0;
 }
 
 
@@ -154,11 +166,11 @@ char *replace_all_occurrences(char const *z,
   for (substr occ = next_occurrence(&iter, ssx, 0);
        !null_substr(occ);
        occ = next_occurrence(&iter, ssx, 0)) {
-    if (SIZE_MAX - len - xlen < ylen) return 0;
-    len = len - xlen + ylen;
+    len -= xlen;
+    size_check_inc(len, ylen);
   }
   char *new_buf = malloc(len);
-  if (!new_buf) return 0;
+  if (!new_buf) goto error;
 
 #define copy_range(b, e) \
 { for (char const *p = (b); p != (e); p++) *dst++ = *p; }
@@ -177,6 +189,9 @@ char *replace_all_occurrences(char const *z,
 #undef copy_range
 
   return new_buf;
+
+error:
+  return 0;
 }
 
 int main(void)
