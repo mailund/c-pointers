@@ -30,12 +30,14 @@ void free_buffer(struct gap_buf *buf)
   free(buf);
 }
 
+#define capped_dbl_size(s) \
+  ((s) < SIZE_MAX / 2) ? (2 * (s)) : SIZE_MAX
+
 int insert_character(struct gap_buf *buf, char c)
 {
   if (buf->cursor == buf->gap_end) {
     if (buf->size == SIZE_MAX) return 0;
-    size_t new_size =
-      (buf->size < SIZE_MAX / 2) ? (2 * buf->size) : SIZE_MAX;
+    size_t new_size = capped_dbl_size(buf->size);
 
     // Allocate a larger buffer
     char *new_buf = realloc(buf->buffer, new_size);
@@ -52,7 +54,7 @@ int insert_character(struct gap_buf *buf, char c)
     buf->size = new_size;
     buf->gap_end = new_size - right_size;
   }
-  
+
   buf->buffer[buf->cursor++] = c;
   return 1; // success
 }
