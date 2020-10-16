@@ -10,9 +10,6 @@ struct gap_buf {
   char *buffer;
 };
 
-#define occupied(buf) \
-  (buf)->cursor + ((buf)->size - (buf)->gap_end)
-
 struct gap_buf *new_buffer(size_t init_size)
 {
   struct gap_buf *buf = malloc(sizeof *buf);
@@ -35,9 +32,56 @@ void free_buffer(struct gap_buf *buf)
   free(buf);
 }
 
-bool resize_buffer(struct gap_buf *buf, size_t new_size)
-{
+#define gb_front(buf) ((buf)->cursor)
+#define gb_back(buf)  ((buf)->size - (buf)->gap_end)
+#define gb_used(buf)  (gb_front(buf) + gb_back(buf))
 
+void move_back(struct gap_buf *buf,
+               char *new_buf, size_t new_size)
+{
+  memmove(new_buf + new_size - gb_back(buf),
+          buf->buffer + buf->gap_end,
+          gb_back(buf));
+}
+
+void shrink_buffer(struct gap_buf *buf,
+                   size_t new_size)
+{
+  // We do not resize if we lose data!
+  if (new_size < gb_used(buf)) return;
+
+  // Move the segment to the right of the cursor
+  move_back(buf, buf->buffer, new_size);
+
+  // Update struct -- set end before updating
+  // the size or gb_back(buf) will be wrong
+  buf->gap_end = new_size - gb_back(buf);
+  buf->size = new_size;
+
+  // Allocate a smaller buffer
+  char *new_buf = realloc(buf->buffer, new_size);
+  if (new_buf) buf->buffer = new_buf;
+}
+
+bool grow_buffer(struct gap_buf *buf, size_t new_size)
+{
+  // We cannot grow to a smaller (or equal) size
+  if (buf->size >= new_size) return false;
+
+  // Allocate a larger buffer
+  char *new_buf = realloc(buf->buffer, new_size);
+  if (!new_buf) return false;
+
+  // Move the segment to the right of the cursor
+  move_back(buf, new_buf, new_size);
+
+  // Update struct -- set end before updating
+  // the size or gb_back(buf) will be wrong
+  buf->buffer = new_buf;
+  buf->gap_end = new_size - gb_back(buf);
+  buf->size = new_size;
+
+  return true;
 }
 
 
@@ -47,23 +91,9 @@ bool resize_buffer(struct gap_buf *buf, size_t new_size)
 bool insert_character(struct gap_buf *buf, char c)
 {
   if (buf->cursor == buf->gap_end) {
-    if (buf->size == SIZE_MAX) return false;
     size_t new_size = capped_dbl_size(buf->size);
-
-    // Allocate a larger buffer
-    char *new_buf = realloc(buf->buffer, new_size);
-    if (!new_buf) return false;
-    buf->buffer = new_buf;
-
-    // Move the segment to the right of the cursor
-    size_t right_size = buf->size - buf->gap_end;
-    memmove(buf->buffer + new_size - right_size,
-            buf->buffer + buf->gap_end,
-            right_size);
-
-    // Update the bookkeeping
-    buf->size = new_size;
-    buf->gap_end = new_size - right_size;
+    bool grow_success = grow_buffer(buf, new_size);
+    if (!grow_success) return false;
   }
 
   buf->buffer[buf->cursor++] = c;
@@ -90,28 +120,32 @@ void backspace(struct gap_buf *buf)
 {
   if (buf->cursor > 0)
     buf->cursor--;
+  if (gb_used(buf) < buf->size / 4)
+    shrink_buffer(buf, buf->size / 2);
 }
 
 void delete(struct gap_buf *buf)
 {
   if (buf->gap_end < buf->size)
     buf->gap_end++;
+  if (gb_used(buf) < buf->size / 4)
+    shrink_buffer(buf, buf->size / 2);
 }
 
 char *extract_text(struct gap_buf *buf)
 {
   // Yes, it is insanely unlikely to happen, but if it does
   // then we do not have space for the zero terminal...
-  if (SIZE_MAX == occupied(buf)) return 0;
+  if (SIZE_MAX == gb_used(buf)) return 0;
 
-  char *string = malloc(occupied(buf) + 1);
+  char *string = malloc(gb_used(buf) + 1);
   if (!string) return 0;
 
   strncpy(string, buf->buffer, buf->cursor);
   strncpy(string + buf->cursor,
           buf->buffer + buf->gap_end,
           buf->size - buf->gap_end);
-  string[occupied(buf)] = '\0';
+  string[gb_used(buf)] = '\0';
   return string;
 }
 
