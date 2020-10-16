@@ -27,7 +27,7 @@ struct link *new_link(int val,
                       struct link *prev,
                       struct link *next)
 {
-  struct link *link = malloc(sizeof(struct link));
+  struct link *link = malloc(sizeof *link);
   if (!link) return 0;
 
   link->value = val;
