@@ -56,14 +56,21 @@ bool da_resize(struct dynarray *da,
   return true; // success
 }
 
-#define capped_dbl_size(s) \
-  ((s) < SIZE_MAX / 2) ? (2 * (s)) : SIZE_MAX
+#define max_array_len(type)               \
+  (SIZE_MAX / sizeof(type))
+
+#define at_max_len(n,type)                \
+  ((n) == max_array_len(type))
+
+#define capped_dbl(n,type)                \
+  (((n) < max_array_len(type) / 2)        \
+    ? (2 * (n)) : max_array_len(type))
 
 bool da_append(struct dynarray *da, int val)
 {
   if (da->used == da->size) {
-    if (da->size == SIZE_MAX) return false;
-    size_t new_size = capped_dbl_size(da->size);
+    if (at_max_len(da->size, *da->data)) return false;
+    size_t new_size = capped_dbl(da->size, *da->data);
     int resize_success = da_resize(da, new_size);
     if (!resize_success) return false;
   }
