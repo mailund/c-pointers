@@ -1,8 +1,8 @@
 
-tests = malloc calloc realloc \
+tests = malloc calloc aligned_alloc realloc \
         strings dynarray gapbuf
 
 all: $(tests)
 
 $(tests): %: %.c
-	cc -Wall -pedantic $< -o $@
+	cc -std=c11 -Wall -pedantic $< -o $@

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 struct gap_buf {
   size_t size;
@@ -8,6 +9,9 @@ struct gap_buf {
   size_t gap_end;
   char *buffer;
 };
+
+#define occupied(buf) \
+  (buf)->cursor + ((buf)->size - (buf)->gap_end)
 
 struct gap_buf *new_buffer(size_t init_size)
 {
@@ -26,22 +30,29 @@ struct gap_buf *new_buffer(size_t init_size)
 
 void free_buffer(struct gap_buf *buf)
 {
+  if (!buf) return;
   free(buf->buffer);
   free(buf);
 }
 
+bool resize_buffer(struct gap_buf *buf, size_t new_size)
+{
+
+}
+
+
 #define capped_dbl_size(s) \
   ((s) < SIZE_MAX / 2) ? (2 * (s)) : SIZE_MAX
 
-int insert_character(struct gap_buf *buf, char c)
+bool insert_character(struct gap_buf *buf, char c)
 {
   if (buf->cursor == buf->gap_end) {
-    if (buf->size == SIZE_MAX) return 0;
+    if (buf->size == SIZE_MAX) return false;
     size_t new_size = capped_dbl_size(buf->size);
 
     // Allocate a larger buffer
     char *new_buf = realloc(buf->buffer, new_size);
-    if (!new_buf) return 0;
+    if (!new_buf) return false;
     buf->buffer = new_buf;
 
     // Move the segment to the right of the cursor
@@ -56,7 +67,7 @@ int insert_character(struct gap_buf *buf, char c)
   }
 
   buf->buffer[buf->cursor++] = c;
-  return 1; // success
+  return true; // success
 }
 
 void cursor_left(struct gap_buf *buf)
@@ -89,19 +100,18 @@ void delete(struct gap_buf *buf)
 
 char *extract_text(struct gap_buf *buf)
 {
-  size_t occupied = buf->cursor + (buf->size - buf->gap_end);
   // Yes, it is insanely unlikely to happen, but if it does
   // then we do not have space for the zero terminal...
-  if (SIZE_MAX == occupied) return 0;
+  if (SIZE_MAX == occupied(buf)) return 0;
 
-  char *string = malloc(occupied + 1);
+  char *string = malloc(occupied(buf) + 1);
   if (!string) return 0;
 
   strncpy(string, buf->buffer, buf->cursor);
   strncpy(string + buf->cursor,
           buf->buffer + buf->gap_end,
           buf->size - buf->gap_end);
-  string[occupied] = '\0';
+  string[occupied(buf)] = '\0';
   return string;
 }
 
