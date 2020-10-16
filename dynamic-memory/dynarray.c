@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <assert.h>
 
 struct dynarray {
@@ -13,12 +14,21 @@ struct dynarray {
 #define da_len(da)      (da)->used
 #define da_as_array(da) (da)->data
 
-int da_init(struct dynarray *da,
-            size_t init_size,
-            size_t init_used)
+#define size_check(n,type)                 \
+  ((SIZE_MAX / sizeof(type)) >= (n))
+#define checked_malloc(n,type)             \
+  (size_check((n),(type)) ?                \
+    malloc((n) * sizeof(type)) : 0)
+#define checked_realloc(p,n,type)          \
+  (size_check((n),(type)) ?                \
+    realloc((p), (n) * sizeof(type)) : 0)
+
+bool da_init(struct dynarray *da,
+             size_t init_size,
+             size_t init_used)
 {
   assert(init_size >= init_used);
-  da->data = malloc(init_size);
+  da->data = checked_malloc(init_size, *da->data);
   da->size = (da->data) ? init_size : 0;
   da->used = (da->data) ? init_used : 0;
   return !!da->data;
@@ -32,31 +42,33 @@ void da_dealloc(struct dynarray *da)
 }
 
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
-int da_resize(struct dynarray *da,
-              size_t new_size)
+bool da_resize(struct dynarray *da,
+               size_t new_size)
 {
-  int *new_data = realloc(da->data, new_size);
+  int *new_data =
+    checked_realloc(da->data, new_size, *da->data);
   // If we cannot allocate, leave everything
   // as it is, but report an error
-  if (!new_data) return 0;
+  if (!new_data) return false;
   da->data = new_data;
   da->size = new_size;
   da->used = MIN(da->used, new_size);
-  return 1; // success
+  return true; // success
 }
 
 #define capped_dbl_size(s) \
   ((s) < SIZE_MAX / 2) ? (2 * (s)) : SIZE_MAX
 
-int da_append(struct dynarray *da, int val)
+bool da_append(struct dynarray *da, int val)
 {
   if (da->used == da->size) {
+    if (da->size == SIZE_MAX) return false;
     size_t new_size = capped_dbl_size(da->size);
     int resize_success = da_resize(da, new_size);
-    if (!resize_success) return 0;
+    if (!resize_success) return false;
   }
   da->data[da->used++] = val;
-  return 1; // success
+  return true; // success
 }
 
 int main(void)
