@@ -3,6 +3,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN_BUF_SIZE 1024
+
 struct gap_buf {
   size_t size;
   size_t cursor;
@@ -14,7 +17,7 @@ struct gap_buf *new_buffer(size_t init_size)
 {
   struct gap_buf *buf = malloc(sizeof *buf);
   if (!buf) return 0;
-  buf->buffer = malloc(init_size);
+  buf->buffer = malloc(MAX(init_size, MIN_BUF_SIZE));
   if (!buf->buffer) {
     free(buf);
     return 0;
@@ -59,6 +62,7 @@ void shrink_buffer(struct gap_buf *buf,
   buf->size = new_size;
 
   // Allocate a smaller buffer
+  new_size = MAX(new_size, MIN_BUF_SIZE);
   char *new_buf = realloc(buf->buffer, new_size);
   if (new_buf) buf->buffer = new_buf;
 }
@@ -69,6 +73,7 @@ bool grow_buffer(struct gap_buf *buf, size_t new_size)
   if (buf->size >= new_size) return false;
 
   // Allocate a larger buffer
+  new_size = MAX(new_size, MIN_BUF_SIZE);
   char *new_buf = realloc(buf->buffer, new_size);
   if (!new_buf) return false;
 
