@@ -45,11 +45,20 @@ void da_dealloc(struct dynarray *da)
 bool da_resize(struct dynarray *da,
                size_t new_size)
 {
-  int *new_data =
-    checked_realloc(da->data, new_size, *da->data);
-  // If we cannot allocate, leave everything
-  // as it is, but report an error
-  if (!new_data) return false;
+  int *new_data = 0;
+
+  if (new_size > 0) {
+    new_data = checked_realloc(da->data, new_size, *da->data);
+    // If we cannot allocate, leave everything
+    // as it is, but report an error
+    if (!new_data) return false;
+  } else {
+    // Go to zero data points
+    free(da->data);
+    // new_data is 0 and will
+    // overwrite da->data below
+  }
+
   da->data = new_data;
   da->size = new_size;
   da->used = MIN(da->used, new_size);
