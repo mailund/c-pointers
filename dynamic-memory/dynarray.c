@@ -9,10 +9,8 @@ struct dynarray {
   int *data;
 };
 
-#define da_get(da,i)    (da)->data[(i)]
-#define da_set(da,i,x)  (da)->data[(i)] = (x)
+#define da_at(da,i)     (da)->data[(i)]
 #define da_len(da)      (da)->used
-#define da_as_array(da) (da)->data
 
 #define size_check(n,type)                 \
   ((SIZE_MAX / sizeof(type)) >= (n))
@@ -49,14 +47,14 @@ void da_dealloc(struct dynarray *da)
 bool da_resize(struct dynarray *da,
                size_t new_size)
 {
-  new_size = MAX(new_size, MIN_ARRAY_SIZE);
-  int *new_data = checked_realloc(da->data, new_size, *da->data);
+  size_t alloc_size = MAX(new_size, MIN_ARRAY_SIZE);
+  int *new_data = checked_realloc(da->data, alloc_size, *da->data);
   // If we cannot allocate, leave everything
   // as it is, but report an error
   if (!new_data) return false;
 
   da->data = new_data;
-  da->size = new_size;
+  da->size = alloc_size;
   da->used = MIN(da->used, new_size);
   return true; // success
 }
@@ -94,10 +92,10 @@ int main(void)
   }
 
   for (int i = 0; i < da_len(&da); i++) {
-    da_set(&da, i, i);
+    da_at(&da, i) = i;
   }
   for (int i = 0; i < da_len(&da); i++) {
-    printf("%d ", da_get(&da, i));
+    printf("%d ", da_at(&da, i));
   }
   printf("\n");
 
@@ -110,7 +108,7 @@ int main(void)
   }
   printf("current length %zu\n", da_len(&da));
   for (int i = 0; i < da_len(&da); i++) {
-    printf("%d ", da_get(&da, i));
+    printf("%d ", da_at(&da, i));
   }
   printf("\n");
 
