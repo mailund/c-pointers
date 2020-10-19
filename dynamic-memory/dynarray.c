@@ -23,11 +23,15 @@ struct dynarray {
   (size_check((n),(type)) ?                \
     realloc((p), (n) * sizeof(type)) : 0)
 
+#define MAX(a,b) (((a) > (b)) ? (a) : (b))
+#define MIN_ARRAY_SIZE 1
+
 bool da_init(struct dynarray *da,
              size_t init_size,
              size_t init_used)
 {
   assert(init_size >= init_used);
+  init_size = MAX(init_size, MIN_ARRAY_SIZE);
   da->data = checked_malloc(init_size, *da->data);
   da->size = (da->data) ? init_size : 0;
   da->used = (da->data) ? init_used : 0;
@@ -45,18 +49,11 @@ void da_dealloc(struct dynarray *da)
 bool da_resize(struct dynarray *da,
                size_t new_size)
 {
-  int *new_data = 0;
-  if (new_size == 0) {
-    // Go to zero data points
-    free(da->data);
-    // new_data is 0 and will
-    // overwrite da->data below
-  } else {
-    new_data = checked_realloc(da->data, new_size, *da->data);
-    // If we cannot allocate, leave everything
-    // as it is, but report an error
-    if (!new_data) return false;
-  }
+  new_size = MAX(new_size, MIN_ARRAY_SIZE);
+  int *new_data = checked_realloc(da->data, new_size, *da->data);
+  // If we cannot allocate, leave everything
+  // as it is, but report an error
+  if (!new_data) return false;
 
   da->data = new_data;
   da->size = new_size;
@@ -79,6 +76,7 @@ bool da_append(struct dynarray *da, int val)
   if (da->used == da->size) {
     if (at_max_len(da->size, *da->data)) return false;
     size_t new_size = capped_dbl(da->size, *da->data);
+    new_size = (new_size > 0) ? new_size : 1;
     int resize_success = da_resize(da, new_size);
     if (!resize_success) return false;
   }
