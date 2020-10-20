@@ -111,11 +111,33 @@ int main(void)
   da_append(&da, &(int){42});
 
   for (int i = 0; i < 5; ++i) {
+    da_append(&da, &i);
+  }
+  for (int i = 10; i < 15; ++i) {
+    printf("%p %d\n", (void *)&i, i);
+  }
+
+  // not pretty...
+  for (int i = 0; i < da_len(&da); i++) {
+    printf("%d ", *(int *)da_at(&da, i));
+  }
+  printf("\n");
+
+  for (int i = 0; i < 5; ++i) {
     // These are all the same local integer!
     // We are filling the array with five
     // copies of 4.
     da_append(&da, &(int){i});
   }
+  printf("%p\n", da.data[da.used - 1]);
+  for (int i = 0; i < 5; ++i) {
+    // These are all the same local integer!
+    // We are filling the array with five
+    // copies of 4.
+    da_append(&da, &(int){i});
+  }
+  printf("%p\n", da.data[da.used - 1]);
+
 
   // not pretty...
   for (int i = 0; i < da_len(&da); i++) {

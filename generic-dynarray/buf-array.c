@@ -26,6 +26,7 @@
   (((n) < max_array_len(obj_size) / 2)        \
     ? (2 * (n)) : max_array_len(obj_size))
 
+#define MIN(a,b) ((a) < (b)) ? (a) : (b)
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN_ARRAY_SIZE 1
 
@@ -42,18 +43,10 @@ struct dynarray {
 // We need separate getters and setters.
 
 // Compute the address instead of index into array
-#define da_get(da,i)    (void *)((da)->data + (i) * (da)->obj_size)
-
-// Have to use memcpy or similar to set a value
-void *da_set(struct dynarray *da, int i, void *val)
-{
-  char *dest = da->data + i * da->obj_size;
-  memcpy(dest, val, da->obj_size);
-  return dest;
-}
+#define da_at(da,i) (void *)((da)->data + (i) * (da)->obj_size)
+#define da_at_as(da,i,type) *(type *)da_at(da,i)
 
 #define da_len(da) (da)->used
-
 
 bool da_init(struct dynarray *da,
              size_t init_size,
@@ -76,13 +69,13 @@ void da_dealloc(struct dynarray *da)
   da->size = da->used = 0;
 }
 
-#define MIN(a,b) ((a) < (b)) ? (a) : (b)
 bool da_resize(struct dynarray *da,
                size_t new_size)
 {
   size_t alloc_size = MAX(new_size, MIN_ARRAY_SIZE);
   // Updated int * => char *
-  char *new_data = checked_realloc(da->data, alloc_size, da->obj_size);
+  char *new_data =
+    checked_realloc(da->data, alloc_size, da->obj_size);
   if (!new_data) return false;
 
   da->data = new_data;
@@ -90,6 +83,7 @@ bool da_resize(struct dynarray *da,
   da->used = MIN(da->used, new_size);
   return true; // success
 }
+
 
 // Update val type int => void *
 bool da_append(struct dynarray *da, void *val)
@@ -100,11 +94,12 @@ bool da_append(struct dynarray *da, void *val)
     int resize_success = da_resize(da, new_size);
     if (!resize_success) return false;
   }
-  // we have to use da_set() to memcpy
-  da_set(da, da->used++, val);
+  // copy memory...
+  memcpy(da->data + da->used * da->obj_size,
+         val, da->obj_size);
+  da->used++;
   return true;
 }
-
 
 
 
@@ -118,54 +113,19 @@ int main(void)
     printf("allocation error\n");
   }
 
-#if 0
-  // Can't use values...
-  da_append(&da, 42);
-  // Can't take addresses of values
-  da_append(&da, &42);
-#endif
-
-  // Now we copy the commpound literal
-  // so we get numbers 0 to 4
   for (int i = 0; i < 5; ++i) {
-    da_append(&da, &(int){i});
+    da_append(&da, &i);
   }
 
-  // not pretty...
+  for (int i = 0; i < 5; ++i) {
+    da_at_as(&da, i, int) += 10;
+  }
+
   for (int i = 0; i < da_len(&da); i++) {
-    printf("%d ", *(int *)da_get(&da, i));
+    printf("%d ", da_at_as(&da, i, int));
   }
   printf("\n");
 
-  // not prettier
-#define da_get_deref(da,i,type) *(type *)(da_get((da),(i)))
-  for (int i = 0; i < da_len(&da); i++) {
-    printf("%d ", da_get_deref(&da, i, int));
-  }
-  printf("\n");
-
-  // need this to avoid freeing stack objects
-  da_resize(&da, 0);
-  // if we didn't get rid of the stack objects
-  // above, then freeing the integers below
-  // would be a problem
-
-#if 0
-  // You cannot do this now. That would involve
-  // adding pointers to int to the array, but
-  // it is an array of int, so the size doesn't
-  // match, and the insertion will only copy
-  // half the pointer if sizeof(int) is half of
-  // sizeof(int *).
-  for (int i = 0; i < 5; ++i) {
-    int *p = malloc(sizeof *p);
-    if (!p) continue;
-    *p = i;
-    da_append(&da, p);
-  }
-  // There is no type-check, though, so you won't
-  // get warnings (but likely crashes).
-#endif
 
   da_dealloc(&da);
 
