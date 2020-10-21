@@ -14,7 +14,7 @@ struct da_meta {
   size_t used;
 };
 
-#define dynarray(TYPE)                 \
+#define dynarr(TYPE)                   \
 struct {                               \
   struct da_meta meta;                 \
   TYPE   data[];                       \
@@ -30,18 +30,18 @@ void *realloc_dynarray_mem(void *p,
                            size_t new_len)
 {
   if (size_overflow(meta_size, obj_size, new_len))
-    goto abort;
+    goto fail;
 
   struct da_meta *new_da =
     realloc(p, meta_size + obj_size * new_len);
-  if (!new_da) goto abort;
+  if (!new_da) goto fail;
 
   new_da->size = new_len;
   new_da->used = MIN(new_da->used, new_len);
 
   return new_da;
 
-abort:
+fail:
   free(p);
   return 0;
 }
@@ -63,7 +63,7 @@ void *new_dynarray_mem(size_t meta_size,
 }
 
 #define new_da(type, init_size)                  \
-  new_dynarray_mem(sizeof(dynarray(type)),       \
+  new_dynarray_mem(sizeof(dynarr(type)),         \
                    sizeof(type), init_size)
 
 #define da_free(da)                              \
@@ -89,14 +89,14 @@ do {                                             \
   da->data[da->meta.used++] = __VA_ARGS__;       \
 } while (0)
 
-// clean up after ourselves...
-#undef grow
 
 int main(void)
 {
-  dynarray(int) *int_array = new_da(int, 10);
+  dynarr(int) *int_array = new_da(int, 10);
   if (!int_array) goto error;
-  printf("%zu out of %zu\n", int_array->meta.used, int_array->meta.size);
+  printf("%zu out of %zu\n",
+         int_array->meta.used,
+         int_array->meta.size);
 
   for (int i = 0; i < 5; i++) {
     da_append(int_array, i);
