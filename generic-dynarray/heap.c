@@ -20,16 +20,14 @@ struct {                               \
   TYPE   data[];                       \
 }
 
-#define size_overflow(meta_size, obj_size, len) \
-  ((SIZE_MAX - meta_size) / obj_size < len)
-
 // Always free if we cannot reallocate
-void *realloc_dynarray_mem(void *p,
+void *realloc_dynarray_mem(struct da_meta *p,
                            size_t meta_size,
                            size_t obj_size,
                            size_t new_len)
 {
-  if (size_overflow(meta_size, obj_size, new_len))
+  // Size size overflow?
+  if (((SIZE_MAX - meta_size) / obj_size < new_len))
     goto fail;
 
   struct da_meta *new_da =
@@ -52,47 +50,50 @@ void *new_dynarray_mem(size_t meta_size,
 {
   struct da_meta *array =
     realloc_dynarray_mem(0, meta_size, obj_size, len);
-  if (array) {
-    // we do set size in realloc, but
-    array->size = len;
-    // if used was not initialised in realloc (and it wasn't)
-    // then we have to set it here...
-    array->used = 0;
-  }
+  if (array) array->used = 0;
   return array;
 }
 
-#define new_da(type, init_size)                  \
-  new_dynarray_mem(sizeof(dynarr(type)),         \
-                   sizeof(type), init_size)
+void *grow_dynarray_mem(struct da_meta *p,
+                        size_t meta_size,
+                        size_t obj_size)
+{
+  // Can we double the length?
+  size_t used = meta_size - obj_size * p->size;
+  size_t adding = MAX(1, p->size);
+  if ((SIZE_MAX - used) / obj_size < adding) {
+    free(p);
+    return 0;
+  }
+
+  return realloc_dynarray_mem(
+    p, meta_size, obj_size, p->size + adding
+  );
+}
+
+#define new_da(da, init_size)                    \
+  new_dynarray_mem(sizeof *(da),                 \
+                   sizeof *(da)->data,           \
+                   (init_size))
 
 #define da_free(da)                              \
-  do { free(da); da = 0; } while(0)
-
-#define grow(size)                               \
-  (((size) == 0) ? /* special case for zero */   \
-    1 :                                          \
-    ((size) > SIZE_MAX / 2) ? /* can we grow? */ \
-      0 : /* no, then report size zero */        \
-      (2 * (size))) /* double the size */
+  do { free(da); (da) = 0; } while(0)
 
 #define da_append(da, ...)                       \
 do {                                             \
-  if (da->meta.used == da->meta.size) {          \
-    size_t new_size = grow(da->meta.size);       \
-    if (new_size == 0) { da_free(da); break; }   \
-    da = realloc_dynarray_mem(                   \
-      da, sizeof *da, sizeof *da->data, new_size \
+  if ((da)->meta.used == (da)->meta.size) {      \
+    (da) = grow_dynarray_mem(                    \
+      (struct da_meta *)(da),                    \
+      sizeof *(da), sizeof *(da)->data           \
     );                                           \
-    if (!da) break;                              \
+    if (!(da)) break;                            \
   }                                              \
-  da->data[da->meta.used++] = __VA_ARGS__;       \
+  (da)->data[(da)->meta.used++] = __VA_ARGS__;   \
 } while (0)
-
 
 int main(void)
 {
-  dynarr(int) *int_array = new_da(int, 10);
+  dynarr(int) *int_array = new_da(int_array, 0);
   if (!int_array) goto error;
   printf("%zu out of %zu\n",
          int_array->meta.used,
