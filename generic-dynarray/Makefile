@@ -1,5 +1,5 @@
 
-tests = void-array buf-array code-generation inline
+tests = void-array buf-array code-generation inline heap
 
 all: $(tests)
 
