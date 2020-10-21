@@ -7,7 +7,7 @@
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 
 #define da_at(da,i)  (da->data[(i)])
-#define da_len(da)   (da->used)
+#define da_len(da)   (da->meta.used)
 
 struct da_meta {
   size_t size;
@@ -24,20 +24,21 @@ struct {                               \
   ((SIZE_MAX - meta_size) / obj_size < len)
 
 // Always free if we cannot reallocate
-void *realloc_dynarray_mem(struct da_meta *p,
+void *realloc_dynarray_mem(void *p,
                            size_t meta_size,
                            size_t obj_size,
                            size_t new_len)
 {
   if (size_overflow(meta_size, obj_size, new_len))
     goto abort;
-    
+
   struct da_meta *new_da =
     realloc(p, meta_size + obj_size * new_len);
   if (!new_da) goto abort;
 
   new_da->size = new_len;
   new_da->used = MIN(new_da->used, new_len);
+
   return new_da;
 
 abort:
@@ -75,13 +76,13 @@ void *new_dynarray_mem(size_t meta_size,
       0 : /* no, then report size zero */        \
       (2 * (size))) /* double the size */
 
-#define da_append(da, status, ...)              \
+#define da_append(da, ...)                      \
 do {                                            \
   if (da->meta.used == da->meta.size) {         \
     size_t new_size = grow(da->meta.size);      \
     if (new_size == 0) { da_free(da); break; }  \
     da = realloc_dynarray_mem(                  \
-      sizeof *da, *da->data, new_size           \
+      da, sizeof *da, *da->data, new_size       \
     );                                          \
     if (!da) break;                             \
   }                                             \
@@ -92,7 +93,23 @@ do {                                            \
 int main(void)
 {
   dynarray(int) *int_array = new_da(int, 10);
-  printf("%zu\n", int_array->meta.size);
+  if (!int_array) goto error;
+  printf("%zu out of %zu\n", int_array->meta.used, int_array->meta.size);
+
+  for (int i = 0; i < 5; i++) {
+    da_append(int_array, i);
+    if (!int_array) goto error;
+  }
+
+  for (int i = 0; i < da_len(int_array); i++) {
+    printf("%d ", da_at(int_array, i));
+  }
+  printf("\n");
+
+  da_free(int_array);
 
   return 0;
+
+error:
+  return 1;
 }
