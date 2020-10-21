@@ -76,19 +76,21 @@ void *new_dynarray_mem(size_t meta_size,
       0 : /* no, then report size zero */        \
       (2 * (size))) /* double the size */
 
-#define da_append(da, ...)                      \
-do {                                            \
-  if (da->meta.used == da->meta.size) {         \
-    size_t new_size = grow(da->meta.size);      \
-    if (new_size == 0) { da_free(da); break; }  \
-    da = realloc_dynarray_mem(                  \
-      da, sizeof *da, *da->data, new_size       \
-    );                                          \
-    if (!da) break;                             \
-  }                                             \
-  da->data[da->meta.used++] = __VA_ARGS__;      \
+#define da_append(da, ...)                       \
+do {                                             \
+  if (da->meta.used == da->meta.size) {          \
+    size_t new_size = grow(da->meta.size);       \
+    if (new_size == 0) { da_free(da); break; }   \
+    da = realloc_dynarray_mem(                   \
+      da, sizeof *da, sizeof *da->data, new_size \
+    );                                           \
+    if (!da) break;                              \
+  }                                              \
+  da->data[da->meta.used++] = __VA_ARGS__;       \
 } while (0)
 
+// clean up after ourselves...
+#undef grow
 
 int main(void)
 {
