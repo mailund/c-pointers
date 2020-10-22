@@ -7,7 +7,6 @@
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 
-
 struct da_meta {
   size_t size;
   size_t used;
@@ -98,26 +97,39 @@ do {                                             \
 } while (0)
 
 
+struct point { double x, y; };
+typedef dynarr(struct point) point_array;
+
+// Use a pointer to the dynamic array pointer
+void add_points(size_t n,
+                double xs[n], double ys[n],
+                point_array **da)
+{
+  for (int i = 0; i < n; i++) {
+    da_append(*da, (struct point){ .x = xs[i], .y = ys[i] });
+    if (!*da) break;
+  }
+}
+
 int main(void)
 {
-  dynarr(int) *int_array = new_da(int_array, 0);
-  if (!int_array) goto error;
-  printf("%zu out of %zu\n",
-         int_array->meta.used,
-         int_array->meta.size);
+  point_array *points = new_da(points, 0);
 
-  for (int i = 0; i < 5; i++) {
-    da_append(int_array, i);
-    if (!int_array) goto error;
-  }
+  size_t n = 5;
+  double xs[5] = { 0.0, 1.0, 2.0, 3.0, 4.0 };
+  double ys[5] = { 4.0, 3.0, 2.0, 1.0, 0.0 };
+  // call by reference
+  add_points(n, xs, ys, &points);
+  if (!points) goto error;
 
-  for (int i = 0; i < da_len(int_array); i++) {
-    printf("%d ", da_at(int_array, i));
+  for (int i = 0; i < da_len(points); i++) {
+    printf("<%.1f,%.1f> ",
+           da_at(points, i).x,
+           da_at(points, i).y);
   }
   printf("\n");
 
-  da_free(int_array);
-
+  da_free(points);
   return 0;
 
 error:
