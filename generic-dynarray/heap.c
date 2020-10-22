@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <stddef.h>
 
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
@@ -69,10 +70,14 @@ void *grow_dynarray_mem(struct da_meta *p,
   );
 }
 
+#define da_data_offset(da)                       \
+  ((char *)&(da)->data - (char *)(da))
+
 #define new_da(da, init_size)                    \
-  new_dynarray_mem(sizeof *(da),                 \
+  ((da) = 0, new_dynarray_mem(                   \
+                   da_data_offset(da),           \
                    sizeof *(da)->data,           \
-                   (init_size))
+                   (init_size)))
 
 #define da_free(da)                              \
   do { free(da); (da) = 0; } while(0)
@@ -85,7 +90,7 @@ do {                                             \
   if ((da)->meta.used == (da)->meta.size) {      \
     (da) = grow_dynarray_mem(                    \
       (struct da_meta *)(da),                    \
-      sizeof *(da), sizeof *(da)->data           \
+      da_data_offset(da), sizeof *(da)->data     \
     );                                           \
     if (!(da)) break;                            \
   }                                              \
