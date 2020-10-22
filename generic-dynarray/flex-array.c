@@ -29,9 +29,11 @@ int main(void)
   printf("%zu %zu\n", sizeof(struct U),
          offsetof(struct U, array));
 
-  struct T *t = 0;
-  printf("%zu %zu\n", sizeof *t,
-         offsetof(__typeof__(*t), array));
+  struct U *u = 0;
+  printf("%zu %zu\n", sizeof *u,
+         offsetof(__typeof__(*u), array));
+  printf("%zu %zu\n", sizeof *u,
+         (char *)&(*u).array - (char *)u);
 
   return 0;
 }
