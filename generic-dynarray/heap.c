@@ -6,8 +6,6 @@
 #define MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define MIN(a,b) ((a) < (b)) ? (a) : (b)
 
-#define da_at(da,i)  (da->data[(i)])
-#define da_len(da)   (da->meta.used)
 
 struct da_meta {
   size_t size;
@@ -26,7 +24,7 @@ void *realloc_dynarray_mem(struct da_meta *p,
                            size_t obj_size,
                            size_t new_len)
 {
-  // Size size overflow?
+  // Is there a size overflow?
   if (((SIZE_MAX - meta_size) / obj_size < new_len))
     goto fail;
 
@@ -79,6 +77,9 @@ void *grow_dynarray_mem(struct da_meta *p,
 #define da_free(da)                              \
   do { free(da); (da) = 0; } while(0)
 
+#define da_at(da,i)  (da->data[(i)])
+#define da_len(da)   (da->meta.used)
+
 #define da_append(da, ...)                       \
 do {                                             \
   if ((da)->meta.used == (da)->meta.size) {      \
@@ -90,6 +91,7 @@ do {                                             \
   }                                              \
   (da)->data[(da)->meta.used++] = __VA_ARGS__;   \
 } while (0)
+
 
 int main(void)
 {
