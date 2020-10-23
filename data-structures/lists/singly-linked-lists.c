@@ -79,25 +79,27 @@ bool contains(struct link *list, int val)
 
 struct link *prepend(struct link *list, int val)
 {
-  // new_link() returns 0 for allocation error,
-  // and we just propagate that.
-  return new_link(val, list);
+  struct link *new_list = new_link(val, list);
+  if (!new_list) free_list(list);
+  return new_list;
 }
 
 struct link *append(struct link *list, int val)
 {
-  if (!list) return new_link(val, 0);
+  struct link *val_link = new_link(val, 0);
+  if (!val_link) {
+    free_list(list);
+    return 0;
+  }
+  
+  if (!list) return val_link;
 
   struct link *last = list;
   while (last->next) {
       last = last->next;
   }
-  last->next = new_link(val, 0);
-  // If we didn't set the last link, then we had
-  // an allocation error and should return 0.
-  // Otherwise we return the new list
-  if (!last->next) return 0;
-  else return list;
+  last->next = val_link;
+  return list;
 }
 
 struct link *concatenate(struct link *x, struct link *y)
@@ -147,7 +149,7 @@ int main(int argc, char **argv)
 {
   srand(time(0));
   int array[] = { 1, 2, 3, 4, 5 };
-  int n = sizeof(array) / sizeof(array[0]);
+  int n = sizeof array / sizeof *array;
 
   struct link *list = make_list(n, array);
   if (!list) {
