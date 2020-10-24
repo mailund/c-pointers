@@ -1,8 +1,5 @@
 
-tests = singly-linked-lists \
-        head-singly-linked-lists \
-				pointer-singly-linked-lists \
-				doubly-linked-lists
+tests = singly-linked-lists
 
 all: $(tests)
 

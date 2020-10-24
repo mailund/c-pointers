@@ -1,48 +1,82 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-
-// fake malloc
-void * (*ml)(size_t) = malloc;
-void *fake_malloc(size_t size)
-{
-  if (rand() % 100 == 0) {
-    return 0;
-  } else {
-    return ml(size);
-  }
-}
-#define malloc fake_malloc
-
-// for contains
 #include <stdbool.h>
+#include <string.h>
 
-struct link {
-  int value;
-  struct link *next;
+typedef void (*deallocator)(void *);
+
+struct refcount {
+  size_t refs;
+  deallocator free;
 };
+
+#define NEW_REFCOUNT(free_func)          \
+  (struct refcount){                     \
+    .refs = 0,                           \
+    .free = (deallocator)(free_func)     \
+  }
+
+
+  struct link {
+    struct refcount refcount;
+    struct link * const next;
+    int value;
+  };
+
+void dec_ref(struct refcount *rc)
+{
+  printf("decref %p (%d): %zu\n", (void *)rc,
+  ((struct link *)rc)->value,
+  rc->refs);
+  if (rc->refs <= 1) rc->free(rc);
+  else rc->refs--;
+}
+
+void inc_ref(struct refcount *rc)
+{
+  rc->refs++;
+  printf("incref %p (%d): %zu\n", (void *)rc,
+  ((struct link *)rc)->value,
+  rc->refs);
+}
+
+#define DECREF(rc) do { if (rc) dec_ref((struct refcount *)rc); } while(0)
+#define INCREF(rc) ((rc) ? (inc_ref((struct refcount *)rc), rc) : 0)
+
+
+
+void free_link(struct link *x)
+{
+  printf("Deleting %p (%d)\n", (void *)x, x->value);
+  DECREF(x->next);
+  free(x);
+}
 
 struct link *new_link(int val, struct link *next)
 {
   struct link *link = malloc(sizeof *link);
   if (!link) return 0;
-  link->value = val;
-  link->next = next;
+
+  // Initialising while circumventing const of next
+  struct link link_data = {
+    .refcount = NEW_REFCOUNT(free_link),
+    .next     = INCREF(next),
+    .value    = val
+  };
+  memcpy(link, &link_data, sizeof *link);
+
   return link;
 }
 
-void free_list(struct link *list)
+typedef struct link *list;
+
+void free_list(list list)
 {
-  while (list) {
-      // Remember next, we cannot get it
-      // after free(list)
-      struct link *next = list->next;
-      free(list);
-      list = next;
-  }
+  free_link(list);
 }
 
-struct link *make_list(int n, int array[n])
+list make_list(int n, int array[n])
 {
   struct link *list = 0;
   for (int i = n - 1; i >= 0; i--) {
@@ -56,7 +90,7 @@ struct link *make_list(int n, int array[n])
   return list;
 }
 
-void print_list(struct link *list)
+void print_list(list list)
 {
   printf("[ ");
   while (list) {
@@ -67,7 +101,7 @@ void print_list(struct link *list)
 }
 
 
-bool contains(struct link *list, int val)
+bool contains(list list, int val)
 {
   while (list) {
       if (list->value == val)
@@ -77,21 +111,22 @@ bool contains(struct link *list, int val)
   return false;
 }
 
-struct link *prepend(struct link *list, int val)
+list prepend(list list, int val)
 {
   struct link *new_list = new_link(val, list);
   if (!new_list) free_list(list);
   return new_list;
 }
 
-struct link *append(struct link *list, int val)
+list append(list list, int val)
 {
+#if 0
   struct link *val_link = new_link(val, 0);
   if (!val_link) {
     free_list(list);
     return 0;
   }
-  
+
   if (!list) return val_link;
 
   struct link *last = list;
@@ -99,50 +134,8 @@ struct link *append(struct link *list, int val)
       last = last->next;
   }
   last->next = val_link;
+#endif
   return list;
-}
-
-struct link *concatenate(struct link *x, struct link *y)
-{
-  if (!x) return y;
-  struct link *last = x;
-  while (last->next) {
-      last = last->next;
-  }
-  last->next = y;
-  return x;
-}
-
-struct link *append_(struct link *list, int val)
-{
-  return concatenate(list, new_link(val, 0));
-}
-
-struct link *delete_value(struct link *list, int val)
-{
-  if (!list) return 0;
-  if (list->value == val) {
-      struct link *next = list->next;
-      free(list);
-      return delete_value(next, val);
-  } else {
-      list->next = delete_value(list->next, val);
-      return list;
-  }
-}
-
-struct link *reverse(struct link *list)
-{
-  if (!list) return 0;
-  struct link *next = list->next;
-  struct link *reversed = list; reversed->next = 0;
-  while (next) {
-      struct link *next_next = next->next;
-      next->next = reversed;
-      reversed = next;
-      next = next_next;
-  }
-  return reversed;
 }
 
 int main(int argc, char **argv)
@@ -165,122 +158,6 @@ int main(int argc, char **argv)
   free_list(list);
   printf("\n");
 
-  printf("prepend/append\n");
-  list = make_list(n, array);
-  if (!list) {
-    perror("List error: ");
-    exit(1); // Just bail here
-  }
-
-  // This is the natural way to write code...
-  list = append(list, 6);
-  list = prepend(list, 0);
-
-  // The error handling forces us to keep the old
-  // list around
-  struct link *new_list = append(list, 6);
-  if (!list) {
-    perror("List error: ");
-    exit(1); // Just bail here
-  }
-  list = new_list;
-  new_list = prepend(list, 0);
-  if (!list) {
-    perror("List error: ");
-    exit(1); // Just bail here
-  }
-  list = new_list;
-
-  print_list(list);
-  free_list(list);
-  printf("\n");
-
-  printf("memory issues...\n");
-  list = make_list(n, array);
-  new_list = prepend(list, -1);
-  if (!new_list) exit(1);
-  struct link *list2 = new_list;
-
-  print_list(list);
-  print_list(list2);
-
-  free_list(list);
-  // WARNING WARNING WARNING!
-  // Now, list2->next points to garbage!
-  free(list2); // but we can delete just the link...
-  printf("\n");
-
-
-  printf("concatenate:\n");
-  list = make_list(n, array);
-  if (!list) {
-    perror("List error: ");
-    exit(1);
-  }
-  list2 = make_list(n, array);
-  if (!list2) {
-    perror("List error: ");
-    exit(1);
-  }
-
-  struct link *list3 = concatenate(list, list2);
-  // list and list3 are the same now
-  print_list(list);
-  print_list(list3);
-  free_list(list3); // this also deletes list and list2!
-  // If we had deleted list2, we couldn't delete list/list2 now
-  printf("\n");
-
-  printf("alternative append:\n");
-  list = make_list(n, array);
-  if (!list) {
-    perror("List error: ");
-    exit(1);
-  }
-
-  list = append_(list, 6);
-  if (!list) {
-    perror("List error: ");
-    exit(1);
-  }
-
-  print_list(list);
-  free_list(list);
-  printf("\n");
-
-  printf("deleting values:\n");
-  list = make_list(n, array);
-  if (!list) {
-    perror("List error: ");
-    exit(1);
-  }
-  list = delete_value(list, 2);
-  list = delete_value(list, 3);
-  print_list(list);
-  free_list(list);
-  printf("\n");
-
-  printf("deleting first link:\n");
-  list = make_list(n, array);
-  list2 = delete_value(list, 1);
-  print_list(list2);
-
-  // the first link in list was freed, so
-  // we cannot use it.
-  // This would be an error: print_list(list);
-
-  free_list(list2);
-  // Even if we hadn't deleted the first link in
-  // delete_value(), we would have deleted the rest
-  // of the list now, so free_list(list) isn't possible
-  printf("\n");
-
-  printf("reversing:\n");
-  list = make_list(n, array);
-  list = reverse(list);
-  print_list(list);
-  free_list(list);
-  printf("\n");
 
   return EXIT_SUCCESS;
 }
