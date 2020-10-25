@@ -1,5 +1,6 @@
 
-tests = singly-linked-lists-1
+tests = singly-linked-lists-1 \
+				singly-linked-lists-2
 
 all: $(tests)
 

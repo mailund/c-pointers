@@ -35,13 +35,14 @@ struct refcount {
   (struct refcount){ .refs = 0, .free = 0 }
 
 
-void dec_ref(struct refcount *rc)
+void *dec_ref(struct refcount *rc)
 {
-  if (!rc)           return;
-  if (rc->free == 0) return;
-  if (rc->refs > 1)  rc->refs--;
-  else               rc->free(rc);
+  if (!rc)           return 0;
+  if (rc->free == 0) return rc;
+  if (rc->refs > 1)  { rc->refs--;   return rc; }
+  else               { rc->free(rc); return 0;  }
 }
+
 
 // return void to avoid explicit casting
 void *inc_ref(struct refcount *rc)
@@ -53,8 +54,6 @@ void *inc_ref(struct refcount *rc)
 #define DECREF(rc) dec_ref(&(rc)->refcount)
 #define INCREF(rc) inc_ref(&(rc)->refcount)
 
-
-
 struct link {
   struct refcount refcount;
   struct link * const next;
@@ -65,8 +64,6 @@ struct link NIL_LINK = { .refcount = PERSISTENT_REF };
 #define NIL (&NIL_LINK)
 #define empty_list(x) (x == NIL)
 
-#define ERROR_LIST 0
-#define error_list(x) (x == ERROR_LIST)
 
 size_t allocated_links; // for debugging
 
@@ -81,7 +78,7 @@ void free_link(struct link *x)
 // This is a leaking version in case of errors!
 struct link *new_link(int val, struct link *next)
 {
-  if (error_list(next)) return ERROR_LIST;
+  if (!next) return 0;
 
   struct link *link = malloc(sizeof *link);
   if (link) {
@@ -171,7 +168,7 @@ int main(int argc, char **argv)
   int n = sizeof array / sizeof *array;
 
   list x = INCREF(make_list(n, array));
-  if (error_list(x)) {
+  if (!x) {
     perror("List error: ");
     exit(1); // Just bail here
   }
