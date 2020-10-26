@@ -21,9 +21,6 @@ struct link {
   int value;
   struct link *next;
 };
-typedef struct link list;
-typedef list * list_ref;
-#define empty_list ((list){ .next = 0 })
 
 struct link *new_link(int val, struct link *next)
 {
@@ -37,37 +34,34 @@ struct link *new_link(int val, struct link *next)
 void free_links(struct link *x)
 {
   while (x) {
-    // Remember next, we cannot get it
-    // after free(list)
     struct link *next = x->next;
     free(x);
     x = next;
   }
 }
 
-#define free_list(x)       \
-  do {                     \
-    free_links((x).next);  \
-    x = empty_list;        \
-  } while(0)
 
+typedef struct link * list;
+#define new_list()   new_link(0, 0)
+#define free_list(x) free_links(x)
 
-// FIXME: error handling
 list make_list(int n, int array[n])
 {
-  list x = empty_list;
+  list x = new_list();
+  if (!x) return 0;
+
   for (int i = n - 1; i >= 0; i--) {
-    struct link *link = new_link(array[i], x.next);
+    struct link *link = new_link(array[i], x->next);
     if (!link) { // Allocation error -- clean up
       free_list(x);
-      return empty_list; // FIXME: error handling
+      return 0;
     }
-    x.next = link;
+    x->next = link;
   }
   return x;
 }
 
-void print_list(list_ref x)
+void print_list(list x)
 {
   printf("[ ");
   struct link *link = x->next;
@@ -78,7 +72,7 @@ void print_list(list_ref x)
   printf("]\n");
 }
 
-bool contains(list_ref x, int val)
+bool contains(list x, int val)
 {
   struct link *link = x->next;
   while (link) {
@@ -89,7 +83,7 @@ bool contains(list_ref x, int val)
   return false;
 }
 
-int prepend(list_ref x, int val)
+int prepend(list x, int val)
 {
   struct link *link = new_link(val, x->next);
   if (!link) return 0;
@@ -97,10 +91,8 @@ int prepend(list_ref x, int val)
   return 1;
 }
 
-struct link *last_link(list *x)
+struct link *last_link(list x)
 {
-  // When we start from x, there is always
-  // a link where we can get the next
   struct link *prev = x;
   while (prev->next) {
     prev = prev->next;
@@ -108,61 +100,43 @@ struct link *last_link(list *x)
   return prev;
 }
 
-int append(list_ref x, int val)
+int append(list x, int val)
 {
   struct link *link = new_link(val, 0);
   if (!link) return 0;
-  struct link *last = last_link(x);
-  last->next = link;
+  last_link(x)->next = link;
   return 1;
 }
 
-void concatenate(list_ref x, list_ref y)
+void concatenate(list x, list y)
 {
-  struct link *last = last_link(x);
-  last->next = y->next;
-  *y = empty_list;
+  last_link(x)->next = y->next;
+  y->next = 0;
 }
 
-void delete_value(list_ref x, int val)
+void delete_value(list x, int val)
 {
-  // When we start from x, there is always
-  // a node with a next pointer.
-  struct link *prev = x;
-  struct link *link = x->next;
-  while (link) {
-    if (link->value != val) {
-      // Move to next...
-      prev = link;
-      link = link->next;
-    } else {
-      // Delete and move to next
-      struct link *next = link->next;
-      free(link);
-      prev->next = link = next;
+  struct link *front = x, *next = 0;
+  while (front) {
+    while ( (next = front->next) &&
+            next->value == val ) {
+      front->next = next->next;
+      free(next);
     }
+    front = next;
   }
 }
 
-void reverse(list_ref x)
+void reverse(list x)
 {
-  // If x's next pointer is null, then it is
-  // an empty list which is already empty.
-  if (!x->next) return;
-
-  // We have at least one link, so we can also
-  // get the first link's next (which may or may
-  // not be null).
-  struct link *next = x->next->next;
-  struct link *reversed = x->next;
-  reversed->next = 0;
+  struct link *next = x->next;
+  x->next = 0;
   while (next) {
-      struct link *next_next = next->next;
-      next->next = reversed;
-      reversed = next;
-      next = next_next;
+    struct link *next_next = next->next;
+    next->next = x->next;
+    x->next = next;
+    next = next_next;
   }
-  x->next = reversed;
 }
 
 int main(void)
@@ -172,30 +146,37 @@ int main(void)
   int n = sizeof(array) / sizeof(array[0]);
 
   list x = make_list(n, array);
-  // FIXME: error handling?
+  if (!x) {
+    perror("Make list error:");
+    exit(1);
+  }
 
   printf("Contains:\n");
   printf("%d %d %d\n",
-          contains(&x, 0),
-          contains(&x, 3),
-          contains(&x, 6));
+          contains(x, 0),
+          contains(x, 3),
+          contains(x, 6));
   free_list(x);
   printf("\n");
 
   printf("prepend/append\n");
   x = make_list(n, array);
+  if (!x) {
+    perror("Make list error:");
+    exit(1);
+  }
 
-  int success = append(&x, 6);
+  int success = append(x, 6);
   if (!success) {
     perror("List error:");
     exit(1);
   }
-  success = prepend(&x, 0);
+  success = prepend(x, 0);
   if (!success) {
     perror("List error:");
     exit(1);
   }
-  print_list(&x);
+  print_list(x);
   free_list(x);
   printf("\n");
 
@@ -203,34 +184,32 @@ int main(void)
   x = make_list(n, array);
   list y = make_list(n, array);
 
-  concatenate(&x, &y);
-  print_list(&x);
+  concatenate(x, y);
+  print_list(x);
   free_list(x);
-  assert(x.next == 0);
-  assert(y.next == 0);
   free_list(y);
   printf("\n");
 
   printf("deleting values:\n");
   x = make_list(n, array);
-  print_list(&x);
-  delete_value(&x, 2);
-  delete_value(&x, 3);
-  print_list(&x);
+  print_list(x);
+  delete_value(x, 2);
+  delete_value(x, 3);
+  print_list(x);
   free_list(x);
   printf("\n");
 
   printf("deleting first link:\n");
   x = make_list(n, array);
-  delete_value(&x, 1);
-  print_list(&x);
+  delete_value(x, 1);
+  print_list(x);
   free_list(x);
   printf("\n");
 
   printf("reversing:\n");
   x = make_list(n, array);
-  reverse(&x);
-  print_list(&x);
+  reverse(x);
+  print_list(x);
   free_list(x);
   printf("\n");
 

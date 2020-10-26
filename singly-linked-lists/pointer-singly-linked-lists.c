@@ -115,39 +115,28 @@ int prepend(list x, int val)
   return 1;
 }
 
-// only call this with non-NULL links
-struct link *last_link(struct link *x)
+struct link **last_next(struct link **x)
 {
-  // When we start from x, there is always
-  // a link where we can get the next
-  struct link *prev = x;
+  if (*x == 0) return x;
+
+  struct link *prev = *x;
   while (prev->next) {
     prev = prev->next;
   }
-  return prev;
+  return &prev->next;
 }
 
 int append(list x, int val)
 {
   struct link *val_link = new_link(val, 0);
   if (!val_link) return 0;
-
-  if (is_list_empty(x)) {
-    list_links(x) = val_link;
-  } else {
-    last_link(list_links(x))->next = val_link;
-  }
+  *last_next(x) = val_link;
   return 1;
 }
 
 void concatenate(list x, list y)
 {
-  if (is_list_empty(x)) {
-    list_links(x) = list_links(y);
-  } else {
-    last_link(list_links(x))->next =
-      list_links(y);
-  }
+  *last_next(x) = list_links(y);
   // remove alias to the old y links
   *y = 0;
 }
