@@ -62,7 +62,7 @@ list new_list(void)
 
 void free_links(list_head *head)
 {
-  struct link *link = head->next;
+  struct link *link = front(head);
   while (link != head) {
       struct link *next = link->next;
       free(link);
@@ -240,34 +240,67 @@ void delete_value(list x, int val)
   }
 }
 
+#if 0
+#define swap_int(x,y) \
+  do { int tmp = x; x = y; y = tmp; } while(0)
+
 void reverse(list x)
 {
-  if (x->next == x) return; // Empty list
-
-  // stack allocated so we don't need to handle
-  // malloc errors...
-  struct link y; y.prev = y.next = &y;
-
-  // link points to an actual link, not the head
-  struct link *link = x->next;
-  // next might point to x, in which case we should
-  // stop, but only after appending link.
-  struct link *next = link->next;
-  // Append link, it is not x, and move it
-  // to the next link
-  do {
-    assert(link != x);
-    link->prev = link->next = 0;
-    prepend_link(&y, link);
-    link = next;
-    next = link->next;
-  } while (link != x);
-
-  // Move the elements back to x
-  x->prev = y.prev; x->prev->next = x;
-  x->next = y.next; x->next->prev = x;
+  struct link *left = front(x);
+  struct link *right = last(x);
+  while (left != right) {
+    swap_int(left->value, right->value);
+    left = left->next; right = right->prev;
+  }
 }
 
+#else
+
+#define swap_p(x,y) \
+  do { struct link *tmp = x; x = y; y = tmp; } while(0)
+
+void reverse(list x)
+{
+  struct link *p = x;
+  do {
+    swap_p(p->prev, p->next);
+    p = p->prev;
+  } while (p != x);
+}
+
+#endif
+
+struct link *get_smallest(list x)
+{
+  assert(!is_empty(x));
+  struct link *p = front(x);
+  struct link *res = p;
+  while (p != x) {
+    if (p->value < res->value)
+      res = p;
+    p = p->next;
+  }
+  return res;
+}
+
+void move_links(list x, list y)
+{
+  if (is_empty(y)) return;
+  connect(x, front(y));
+  connect(last(y), x);
+  clear_list(y);
+}
+
+void selection_sort(list x)
+{
+  list_head y = init_list_head(y);
+  while (!is_empty(x)) {
+    struct link *next = get_smallest(x);
+    unlink(next);
+    append_link(&y, next);
+  }
+  move_links(x, &y);
+}
 
 
 int main(int argc, char **argv)
@@ -358,6 +391,22 @@ int main(int argc, char **argv)
   print_list(x);
   free_list(x);
   printf("\n");
+
+  list_head head = init_list_head(head);
+  append(&head, 1);
+  append(&head, 2);
+  print_list(&head);
+  free_links(&head);
+
+  x = new_list();
+  append(x, 4);
+  append(x, 1);
+  append(x, 4);
+  append(x, 7);
+  append(x, 3);
+  selection_sort(x);
+  print_list(x);
+  free_list(x);
 
   return 0;
 }
