@@ -32,13 +32,13 @@ void move_links(list x, list y)
 
 void selection_sort(list x)
 {
-  list_head y = init_list_head(y);
+  list_head sorted = init_list_head(sorted);
   while (!is_empty(x)) {
     struct link *next = get_smallest(x);
     unlink(next);
-    append_link(&y, next);
+    append_link(&sorted, next);
   }
-  move_links(x, &y);
+  move_links(x, &sorted);
 }
 
 
@@ -97,11 +97,27 @@ int main(int argc, char **argv)
   concatenate(x, y);
   print_list(x);
   free_list(x);
+
   // concatenate() doesn't free y, it only
   // empties it
   assert(y->prev == y);
   assert(y->next == y);
   free_list(y);
+
+  x = make_list(n, array);
+  y = new_list();
+  concatenate(x, y);
+  print_list(x);
+  free_list(x);
+  free_list(y);
+
+  x = new_list();
+  y = make_list(n, array);
+  concatenate(x, y);
+  print_list(x);
+  free_list(x);
+  free_list(y);
+
   printf("\n");
 
   printf("deleting values:\n");

@@ -95,13 +95,8 @@ bool contains(list x, int val)
 // choice.
 void concatenate(list x, list y)
 {
-  // If y is empty we are already done
-  if (is_empty(y)) return;
-
   connect(last(x), front(y));
   connect(last(y), x);
-
-  // remove elements from y
   clear_list(y);
 }
 
