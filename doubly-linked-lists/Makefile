@@ -1,7 +1,10 @@
 
 tests = doubly-linked-lists
+CFLAGS = -Wall -pedantic
 
 all: $(tests)
 
-$(tests): %: %.c
-	cc -Wall -pedantic $< -o $@
+$(tests): %: %.c list.o
+	cc $(CFLAGS) $< list.o -o $@
+
+list.o: list.c list.h
