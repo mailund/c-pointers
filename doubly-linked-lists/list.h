@@ -64,8 +64,6 @@ void free_links(list_head *head);
 #define link_before(x, y)   \
   link_after((x)->prev, y)
 
-#define prepend_link link_after
-#define append_link  link_before
 
 
 // Remove x from the list, but leave its
@@ -84,6 +82,8 @@ int insert_val_after(struct link *after, int val);
 #define insert_val_before(before, val) \
   insert_val_after((before)->prev, val)
 
+#define prepend_link link_after
+#define append_link  link_before
 #define prepend insert_val_after
 #define append  insert_val_before
 

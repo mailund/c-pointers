@@ -66,21 +66,23 @@ list make_list(int n, int array[n])
 void print_list(list x)
 {
   printf("[ ");
-  struct link *link = front(x);
-  while (link != x) {
+  for (struct link *link = front(x);
+       link != x;
+       link = link->next) {
     printf("%d ", link->value);
-    link = link->next;
   }
   printf("]\n");
 }
 
 bool contains(list x, int val)
 {
-  struct link *link = front(x);
-  while (link != x) {
+  for (struct link *link = front(x);
+       link != x;
+       link = link->next) {
+
     if (link->value == val)
       return true;
-    link = link->next;
+
   }
   return false;
 }
