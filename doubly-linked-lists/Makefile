@@ -1,5 +1,5 @@
 
-tests = doubly-linked-lists
+tests = doubly-linked-lists sorting
 CFLAGS = -Wall -pedantic
 
 all: $(tests)

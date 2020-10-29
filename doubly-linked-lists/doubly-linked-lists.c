@@ -6,44 +6,6 @@
 
 
 
-
-
-
-struct link *get_smallest(list x)
-{
-  assert(!is_empty(x));
-  struct link *p = front(x);
-  struct link *res = p;
-  while (p != x) {
-    if (p->value < res->value)
-      res = p;
-    p = p->next;
-  }
-  return res;
-}
-
-void move_links(list x, list y)
-{
-  free_links(x);
-  if (!is_empty(y)) {
-    *x = *y;
-    connect_neighbours(x);
-    clear_list(y);
-  }
-}
-
-void selection_sort(list x)
-{
-  list_head sorted = init_list_head(sorted);
-  while (!is_empty(x)) {
-    struct link *next = get_smallest(x);
-    unlink(next);
-    append_link(&sorted, next);
-  }
-  move_links(x, &sorted);
-}
-
-
 int main(int argc, char **argv)
 {
   int array[] = { 1, 2, 3, 4, 5 };
@@ -154,15 +116,20 @@ int main(int argc, char **argv)
   print_list(&head);
   free_links(&head);
 
-  x = new_list();
-  append(x, 4);
-  append(x, 1);
-  append(x, 4);
-  append(x, 7);
-  append(x, 3);
-  selection_sort(x);
+  x = make_list(n, array);
+  list z = copy_list(x);
   print_list(x);
+  print_list(z);
+  assert(equal(x, z));
+
+  delete_value(z, 5);
+  print_list(x);
+  print_list(z);
+  assert(!equal(x, z));
+
   free_list(x);
+  free_list(z);
+
 
   return 0;
 }

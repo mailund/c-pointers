@@ -10,11 +10,6 @@ struct link {
   struct link *next;
 };
 
-struct link *new_link(int val,
-                      struct link *prev,
-                      struct link *next);
-
-
 typedef struct link list_head;
 
 #define init_list_head(x) \
@@ -26,14 +21,17 @@ typedef list_head *list;
 #define is_empty(x) ((x) == front(x))
 
 
-list new_list(void);
-
 // Doesn't free, links, but set the list to empty
 #define clear_head(head) \
   do { (head) = init_list_head(head); } while(0)
 
 // Doesn't free, links, but set the list to empty
 #define clear_list(x) clear_head(*(x))
+
+struct link *new_link(int val,
+                      struct link *prev,
+                      struct link *next);
+list new_list(void);
 
 void free_links(list_head *head);
 #define free_list(x) \
@@ -64,8 +62,6 @@ void free_links(list_head *head);
 #define link_before(x, y)   \
   link_after((x)->prev, y)
 
-
-
 // Remove x from the list, but leave its
 // pointers so we still have access to its
 // neighbours if we need them
@@ -87,13 +83,15 @@ int insert_val_after(struct link *after, int val);
 #define prepend insert_val_after
 #define append  insert_val_before
 
-
 list make_list(int n, int array[n]);
 void print_list(list x);
 bool contains(list x, int val);
 void concatenate(list x, list y);
 void delete_value(list x, int val);
 void reverse(list x);
+list copy_list(list x);
+bool equal(list x, list y);
+
 
 
 #endif // LIST_H

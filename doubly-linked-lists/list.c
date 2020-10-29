@@ -142,3 +142,33 @@ void reverse(list x)
 }
 
 #endif
+
+
+list copy_list(list x)
+{
+  list res = new_list();
+  if (!res) return 0;
+
+  for (struct link *p = front(x);
+       p != x; p = p->next) {
+
+    if (!append(res, p->value)) {
+      free_list(res);
+      return 0;
+    }
+  }
+
+  return res;
+}
+
+bool equal(list x, list y)
+{
+  struct link *p = front(x);
+  struct link *q = front(y);
+  while ( (p != x) && (q != y) ) {
+    if (p->value != q->value)
+      return false;
+    p = p->next; q = q->next;
+  }
+  return (p == x) && (q == y);
+}
