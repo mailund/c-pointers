@@ -24,10 +24,12 @@ struct link *get_smallest(list x)
 
 void move_links(list x, list y)
 {
-  if (is_empty(y)) return;
-  connect(x, front(y));
-  connect(last(y), x);
-  clear_list(y);
+  free_links(x);
+  if (!is_empty(y)) {
+    *x = *y;
+    connect_neighbours(x);
+    clear_list(y);
+  }
 }
 
 void selection_sort(list x)
