@@ -99,8 +99,100 @@ void insertion_sort(list x)
 #endif
 
 // Merge sort -----------------------------------------------
+void merge(list x, list y)
+{
+  list_head merged = init_list_head(merged);
+  struct link *p = front(x), *q = front(y);
+
+  while( (p != x) && (q != y) ) {
+    struct link *smallest;
+    if (p->value < q->value) {
+      unlink(p);
+      smallest = p; p = p->next;
+    } else {
+      unlink(q);
+      smallest = q; q = q->next;
+    }
+    append_link(&merged, smallest);
+  }
+
+  concatenate(&merged, x);
+  concatenate(&merged, y); // also clears y
+  move_links(x, &merged);
+}
+
+#if 1
+void split_list(list x, list y)
+{
+  assert(is_empty(y));
+  struct link *p = front(x);
+  while (p != x) {
+    struct link *q = p->next;
+    unlink(p); append_link(y, p);
+    if (q == x) return;
+    p = q->next;
+  }
+}
+#else
+void split_list(list x, list y)
+{
+  assert(is_empty(y));
+
+  list_head z = init_list_head(z);
+  bool flag = true;
+  while (!is_empty(x)) {
+    list target = ((flag = !flag)) ? y : &z;
+    struct link *p = front(x);
+    unlink(p);
+    append_link(target, p);
+  }
+
+  move_links(x, &z);
+}
+#endif
+
+void merge_sort(list x)
+{
+  if (is_empty(x) || front(x)->next == x)
+    return; // length zero or one lists are sorted
+
+  list_head y = init_list_head(y);
+  split_list(x, &y);
+  merge_sort(x); merge_sort(&y);
+  merge(x, &y);
+}
 
 // Quick sort -----------------------------------------------
+void partition(list x, list y, int pivot)
+{
+  assert(is_empty(y));
+  struct link *p = front(x);
+  while (p != x) {
+    struct link *next = p->next;
+    if (p->value > pivot) {
+      unlink(p); append_link(y, p);
+    }
+    p = next;
+  }
+}
+
+void quick_sort(list x)
+{
+  if (is_empty(x) || front(x)->next == x)
+    return; // length zero or one lists are sorted
+
+  // remove the pivot, to make sure that we reduce
+  // the problem size each recursion
+  struct link *first = front(x); unlink(first);
+  int pivot = first->value;
+
+  list_head y = init_list_head(y);
+  partition(x, &y, pivot);
+  quick_sort(x); quick_sort(&y);
+  append_link(x, first); // get first back into the list
+  concatenate(x, &y);
+}
+
 
 
 list random_list(int n)
@@ -129,6 +221,18 @@ void test_sorting(int n)
   y = copy_list(x);
   insertion_sort(y);
   printf("insertion: "); print_list(y);
+  assert(is_sorted(y));
+  free_list(y);
+
+  y = copy_list(x);
+  merge_sort(y);
+  printf("merge:     "); print_list(y);
+  assert(is_sorted(y));
+  free_list(y);
+
+  y = copy_list(x);
+  quick_sort(y);
+  printf("quick:     "); print_list(y);
   assert(is_sorted(y));
   free_list(y);
 
