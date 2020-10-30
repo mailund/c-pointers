@@ -99,6 +99,7 @@ void insertion_sort(list x)
 #endif
 
 // Merge sort -----------------------------------------------
+#if 0
 void merge(list x, list y)
 {
   list_head merged = init_list_head(merged);
@@ -120,6 +121,22 @@ void merge(list x, list y)
   concatenate(&merged, y); // also clears y
   move_links(x, &merged);
 }
+#else
+void merge(list x, list y)
+{
+  list_head merged = init_list_head(merged);
+  while( !is_empty(x) && !is_empty(y) ) {
+    struct link *smallest =
+      (front(x)->value < front(y)->value)
+      ? front(x) : front(y);
+    unlink(smallest);
+    append_link(&merged, smallest);
+  }
+  concatenate(&merged, x);
+  concatenate(&merged, y); // also clears y
+  move_links(x, &merged);
+}
+#endif
 
 #if 1
 void split_list(list x, list y)
