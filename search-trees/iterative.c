@@ -18,11 +18,16 @@ stree node(int value, stree left, stree right)
   };
   return t;
 }
-#define leaf(V) node(V, 0, 0)
+#define leaf(val) node(val, 0, 0)
 
-stree *rightmost_to(stree *t, struct node *n);
-#define rightmost(t) rightmost_to(t, 0)
 
+stree *rightmost(stree *t)
+{
+  while ((*t)->right) {
+    t = &(*t)->right;
+  }
+  return t;
+}
 
 void free_nodes(struct node *n)
 {
@@ -70,7 +75,6 @@ stree *new_stree(void)
   do { free_nodes(*t); free(t); t = 0; } while(0)
 
 
-// tail recursive
 stree *find_loc(stree *t, int val)
 {
   while (*t && (*t)->value != val) {
@@ -89,20 +93,22 @@ bool contains(stree *t, int val)
 
 bool insert(stree *t, int val)
 {
-  stree *target = find_loc(t, val);
-  if (*target) return true; // already there
-  else return !!(*target = leaf(val));
+  stree *loc = find_loc(t, val);
+  if (*loc) return true; // already there
+  else return !!(*loc = leaf(val));
 }
 
 
 void delete(stree *t, int val)
 {
-  stree *target = find_loc(t, val);
-  if (*target) {
-    stree t = *target;
+  stree *loc = find_loc(t, val);
+
+  if (*loc) {
+    stree t = *loc;
     if (!(t->left && t->right)) {
-      *target = t->left ? t->left : t->right;
+      *loc = t->left ? t->left : t->right;
       free(t);
+
     } else {
       stree *rm_ref = rightmost(&t->left);
       stree rm = *rm_ref;
@@ -138,16 +144,6 @@ void print_stree(stree *t)
     print_stree(&(*t)->right);
   putchar(')');
 }
-
-
-stree *rightmost_to(stree *t, struct node *n)
-{
-  while ((*t)->right && (*t)->right != n) {
-    t = &(*t)->right;
-  }
-  return t;
-}
-
 
 
 
