@@ -10,8 +10,10 @@ struct node {
   struct node *right;
 };
 
+int allocated;
 stree node(int value, stree left, stree right)
 {
+  allocated++;
   stree t = malloc(sizeof *t);
   if (t) *t = (struct node){
     .value = value, .left = left, .right = right
@@ -19,15 +21,6 @@ stree node(int value, stree left, stree right)
   return t;
 }
 #define leaf(V) node(V, 0, 0)
-
-// Not tail recursive
-void free_nodes(struct node *n)
-{
-  if (!n) return;
-  free_nodes(n->left);
-  free_nodes(n->right);
-  free(n);
-}
 
 stree *new_stree(void)
 {
@@ -80,13 +73,13 @@ void delete(stree *t, int val)
     stree t = *target;
     if (!(t->left && t->right)) {
       *target = t->left ? t->left : t->right;
-      free(t);
+      free(t); allocated--;
     } else {
       stree *rm_ref = rightmost(&t->left);
       stree rm = *rm_ref;
       t->value = rm->value;
       *rm_ref = rm->left;
-      free(rm);
+      free(rm); allocated--;
     }
   }
 }
@@ -199,34 +192,24 @@ void cleanup_iter(struct stree_iter *iter)
   while (next_node(iter)) {}
 }
 
-void morris_free_nodes(struct node *n)
+void free_nodes(struct node *n)
 {
   struct node *curr = n;
   while (curr) {
     if (!curr->left) {
       struct node *right = curr->right;
-      free(curr);
+      free(curr); allocated--;
       curr = right;
-
     } else {
-
       // Since we delete the left links, left will be NULL
       // when we return to node, so we never find curr again
       stree pred = *rightmost(&curr->left);
-      if (pred->right == 0) {
-        pred->right = curr;
-        // Remove the left link so we don't go down that tree
-        // again...
-        struct node *left = curr->left;
-        curr->left = 0;
-        curr = left;
-
-      } else {
-        pred->right = 0;
-        struct node *right = curr->right;
-        free(curr);
-        curr = right;
-      }
+      pred->right = curr;
+      // Remove the left link so we don't go down that tree
+      // again...
+      struct node *left = curr->left;
+      curr->left = 0;
+      curr = left;
     }
   }
 }
@@ -294,8 +277,10 @@ int main(void)
   free_stree(t2);
 
   t2 = make_stree(n, array);
-  morris_free_nodes(*t2);
+  free_nodes(*t2);
   free(t2);
+
+  printf("allocated == %d\n", allocated);
 
   return 0;
 }

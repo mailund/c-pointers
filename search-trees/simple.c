@@ -29,6 +29,7 @@ bool contains(stree t, int val)
   else                 return contains(t->right, val);
 }
 
+#if 0
 // Not tail recursive, and we don't handle allocation errors
 stree insert(stree t, int val)
 {
@@ -40,7 +41,29 @@ stree insert(stree t, int val)
   }
   return t;
 }
+#else
+// Not tail recursive
+stree insert_node(stree t, struct node *n)
+{
+  if (!t) return n;
+  if (n->value == t->value) {
+    free(n); // it was already here
+  } else if (n->value < t->value) {
+    t->left = insert_node(t->left, n);
+  } else {
+    t->right = insert_node(t->right, n);
+  }
+  return t;
+}
 
+stree insert(stree t, int val)
+{
+  struct node *n = leaf(val);
+  if (!n) return 0;
+  return insert_node(t, n);
+}
+
+#endif
 // tail recursive
 int rightmost_val(stree t)
 {
