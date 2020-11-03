@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <setjmp.h>
 
 typedef struct node *stree;
 struct node {
@@ -105,39 +106,30 @@ struct free_frame {
   struct node       *node;
   struct free_frame *next;
 };
-typedef struct free_frame *free_stack;
 
-bool free_stack_empty(free_stack *stack)
-{
-  return *stack == 0;
-}
-
-void free_push(free_stack  *stack,
-               struct node *node)
+void free_push(struct free_frame **stack, struct node *node)
 {
   if (!node) return;
   struct free_frame *frame = malloc(sizeof *frame);
   if (!frame) abort(); // We do not tolerate errors!
-  *frame = (struct free_frame) {
-    .node = node, .next = *stack
-  };
+  *frame = (struct free_frame){ .node = node, .next = *stack };
   *stack = frame;
 }
 
-struct node *free_pop(free_stack *stack)
+struct node *free_pop(struct free_frame **stack)
 {
   struct free_frame *top = *stack;
+  struct node *node = top->node;
   *stack = top->next;
-  struct node *n = top->node;
   free(top);
-  return n;
+  return node;
 }
 
 void free_nodes(struct node *n)
 {
-  free_stack stack = 0;
+  struct free_frame *stack = 0;
   free_push(&stack, n);
-  while (!free_stack_empty(&stack)) {
+  while (stack) {
     n = free_pop(&stack);
     free_push(&stack, n->left);
     free_push(&stack, n->right);
@@ -145,17 +137,83 @@ void free_nodes(struct node *n)
   }
 }
 
-// Not tail recursive
+enum print_op {
+  LPAR, TREE, COMMA, VALUE, RPAR
+};
+struct print_frame {
+  enum print_op op;
+  struct node *node;
+  struct print_frame *next;
+};
+struct print_stack {
+  struct print_frame *frames;
+  jmp_buf env;
+};
+
+void print_push(struct print_stack *stack,
+                enum print_op op, struct node *node)
+{
+  struct print_frame *frame = malloc(sizeof *frame);
+  if (!frame) longjmp(stack->env, 1); // bail!
+  *frame = (struct print_frame){
+    .op = op, .node = node, .next = stack->frames
+  };
+  stack->frames = frame;
+}
+
+void schedule_print(struct print_stack *stack,
+                    struct node *node)
+{
+  print_push(stack, RPAR, 0);
+  if (node->right) print_push(stack, TREE, node->right);
+  print_push(stack, COMMA, 0);
+  print_push(stack, VALUE, node);
+  print_push(stack, COMMA, 0);
+  if (node->left) print_push(stack, TREE, node->left);
+  print_push(stack, LPAR, 0);
+}
+
+void handle_print_op(enum print_op op, struct node *node,
+                     struct print_stack *stack)
+{
+  switch (op) {
+    case LPAR:  putchar('('); break;
+    case RPAR:  putchar(')'); break;
+    case COMMA: putchar(','); break;
+    case VALUE: printf("%d", node->value);   break;
+    case TREE:  schedule_print(stack, node); break;
+  }
+}
+
 void print_stree(stree *t)
 {
   if (!*t) return;
-  putchar('(');
-    print_stree(&(*t)->left);
-    putchar(',');
-    printf("%d", (*t)->value);
-    putchar(',');
-    print_stree(&(*t)->right);
-  putchar(')');
+
+  enum print_op op;
+  struct node *n = 0;
+  struct print_stack stack = { .frames = 0 };
+  if (setjmp(stack.env) != 0) goto error;
+
+  schedule_print(&stack, *t);
+  while (stack.frames) {
+    struct print_frame *top = stack.frames;
+    op = top->op; n = top->node;
+    stack.frames = top->next;
+    free(top);
+
+    handle_print_op(op, n, &stack);
+  }
+  return;
+
+error:
+  // Cleanup stack memory
+  while (stack.frames) {
+    struct print_frame *top = stack.frames;
+    stack.frames = top->next;
+    free(top);
+  }
+  // We cannot undo the damage we have done to the output, though.
+  // We have written parts of the tree, and then bailed...
 }
 
 
