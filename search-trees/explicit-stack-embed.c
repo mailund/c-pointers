@@ -206,7 +206,5 @@ int main(void)
   print_stree(t2); putchar('\n');
   free_stree(t2);
 
-  printf("allocated: %d\n", allocated);
-
   return 0;
 }

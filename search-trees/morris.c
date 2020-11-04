@@ -203,8 +203,7 @@ void free_nodes(struct node *n)
     } else {
       // Since we delete the left links, left will be NULL
       // when we return to node, so we never find curr again
-      stree pred = *rightmost(&curr->left);
-      pred->right = curr;
+      (*rightmost(&curr->left))->right = curr;
       // Remove the left link so we don't go down that tree
       // again...
       struct node *left = curr->left;
