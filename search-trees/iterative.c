@@ -145,53 +145,62 @@ void print_stree(stree *t)
   putchar(')');
 }
 
-
+#define indent(I) do { for (int i = 0; i < I; i++) putchar(' '); } while(0)
+void print_stree_indent(stree *t, int indent)
+{
+  if (!*t) return;
+  indent(indent); printf("[%d] <%p>\n", (*t)->value, (void*)*t);
+  print_stree_indent(&(*t)->left, indent + 2);
+  print_stree_indent(&(*t)->right, indent + 2);
+}
+#define print_stree(t) print_stree_indent(t, 0)
 
 int main(void)
 {
-#if 0
-  stree t =
-    node(3,
-      node(2, leaf(1), 0),
-      leaf(6));
-#endif
-  stree t = 0;
-  insert(&t, 3);
-  insert(&t, 2);
-  insert(&t, 1);
-  insert(&t, 6);
+  #if 0
+    stree t =
+      node(3,
+        node(2, leaf(1), 0),
+        leaf(6));
+  #endif
+    stree t = 0;
+    insert(&t, 3);
+    insert(&t, 2);
+    insert(&t, 1);
+    insert(&t, 6);
 
-  print_stree(&t); putchar('\n');
+    print_stree(&t); putchar('\n');
 
-  assert(contains(&t, 2));
-  assert(contains(&t, 1));
-  assert(contains(&t, 3));
-  assert(!contains(&t, 10));
-  assert(!contains(&t, 0));
+    assert(contains(&t, 2));
+    assert(contains(&t, 1));
+    assert(contains(&t, 3));
+    assert(!contains(&t, 10));
+    assert(!contains(&t, 0));
 
-  insert(&t, 10);
-  insert(&t, 0);
+    insert(&t, 10);
+    insert(&t, 0);
 
-  assert(contains(&t, 10));
-  assert(contains(&t, 0));
+    assert(contains(&t, 10));
+    assert(contains(&t, 0));
 
 
-  print_stree(&t); putchar('\n');
+    print_stree(&t); putchar('\n');
 
-  delete(&t, 12);
-  delete(&t, 3);
-  delete(&t, 6);
+    delete(&t, 12);
+    delete(&t, 3);
+    delete(&t, 6);
 
-  assert(!contains(&t, 3));
-  assert(!contains(&t, 6));
+    assert(!contains(&t, 3));
+    assert(!contains(&t, 6));
 
-  print_stree(&t); putchar('\n');
-  clear_stree(&t);
+    print_stree(&t); putchar('\n');
+    clear_stree(&t);
 
-  int array[] = { 1, 2, 13, 4, 16, 8, 10 };
-  int n = sizeof array / sizeof *array;
-  stree *t2 = make_stree(n, array);
-  print_stree(t2); putchar('\n');
+    int array[] = { 1, 2, 13, 4, 16, 8, 10 };
+    int n = sizeof array / sizeof *array;
+    stree *t2 = make_stree(n, array);
+    print_stree(t2); putchar('\n');
+    free_stree(t2);
 
   return 0;
 }
