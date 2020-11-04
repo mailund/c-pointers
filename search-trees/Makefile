@@ -1,6 +1,6 @@
 
 tests = simple reference reference-refactored iterative \
-			  explicit-stack morris 
+			  explicit-stack explicit-stack-embed morris 
 CFLAGS = -Wall -pedantic
 
 all: $(tests)
