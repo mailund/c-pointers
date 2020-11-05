@@ -44,6 +44,7 @@ void free_nodes(struct node *n);
 // Find parent and child
 stree *find_loc(stree *t, int val, stree *p)
 {
+  *p = 0; // root parent is NULL
   while (*t && (*t)->value != val) {
     *p = *t;
     if (val < (*t)->value) t = &(*t)->left;
@@ -70,6 +71,7 @@ bool insert(stree *t, int val)
 stree *rightmost(stree *t, stree *p)
 {
   while ((*t)->right) {
+    *p = *t;
     t = &(*t)->right;
   }
   return t;
@@ -206,6 +208,33 @@ void free_nodes(struct node *n)
     }
   }
 }
+
+void parent_free(stree t)
+{
+  struct node *p;
+  enum { DOWN, UP } state = DOWN;
+  while (t) {
+    switch (state) {
+      case DOWN:
+        while (t->left) { t = t->left; }
+        if (t->right) { t = t->right; }
+        else          { state = UP; }
+        break;
+
+      case UP:
+        if (!t->parent) { free(t); allocated--; return; }
+        if (left_child(t)) {
+          p = t->parent; free(t); allocated--; t = p;
+          if (t->right) { t = t->right; state = DOWN; }
+        } else {
+          p = t->parent; free(t); allocated--; t = p;
+        }
+        break;
+    }
+  }
+}
+
+#define free_nodes parent_free
 
 
 int main(void)
