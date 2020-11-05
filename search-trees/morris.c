@@ -201,11 +201,9 @@ void free_nodes(struct node *n)
       free(curr); allocated--;
       curr = right;
     } else {
-      // Since we delete the left links, left will be NULL
-      // when we return to node, so we never find curr again
+      // Add pointer so we can go back
       (*rightmost(&curr->left))->right = curr;
-      // Remove the left link so we don't go down that tree
-      // again...
+      // Recurse left, but make sure we never go left again
       struct node *left = curr->left;
       curr->left = 0;
       curr = left;

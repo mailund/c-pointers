@@ -139,8 +139,8 @@ void print_stree_indent(stree *t, int indent)
 #define print_stree(t) print_stree_indent(t, 0)
 #endif
 
-#define left_child(t) ((t)->parent && (t)->parent->left == (t))
-#define right_child(t) ((t)->parent && (t)->parent->right == (t))
+#define left_child(t) \
+  ((t)->parent && (t)->parent->left == (t))
 
 void parent_traverse(stree t)
 {
@@ -148,28 +148,31 @@ void parent_traverse(stree t)
   while (t) {
     switch (state) {
       case DOWN:
+        // Recurse as far left as we can...
         while (t->left) { putchar('('); t = t->left; }
-
-        printf(",%d,", t->value); // VISIT
-
-        if (t->right) t = t->right;
-        else { state = UP; putchar(')'); }
+        // Emit the leaf we find there
+        printf("(,%d,", t->value); // VISIT
+        // Then go right, if we can, or up if we can't.
+        if (t->right) { t = t->right; }
+        else          { putchar(')'); state = UP; }
         break;
 
       case UP:
-      printf("case UP: "); print_stree(&t); putchar('\n');
-        // if we have a right child, recurse to the right
-        if (left_child(t) && t->right) {
-          printf("%d\n", t->value); // VISIT
-          t = t->right; state = DOWN;
-        } else {
-          // move up in recursion
-          printf("going up...\n");
+        if (!t->parent) return; // we have returned to the root...
+        if (left_child(t)) {
+          // Returning from a left child, we emit the parent
           t = t->parent;
+          printf(",%d,", t->value); // VISIT
+          // Then we go right if we can't, or continue up
+          // (t is already the parent) if we cannot.
+          if (t->right) { t = t->right; state = DOWN; }
+          else          { putchar(')'); }
+        } else {
+          // Returning from a right child just means going up
+          putchar(')'); t = t->parent;
         }
         break;
     }
-
   }
 }
 
@@ -181,8 +184,6 @@ void check_tree(stree t)
   if (t->right) assert(t->right->parent == t);
   check_tree(t->left); check_tree(t->right);
 }
-
-
 
 void free_nodes(struct node *n)
 {
@@ -223,7 +224,7 @@ int main(void)
 
   print_stree(&t); putchar('\n');
   check_tree(t);
-  parent_traverse(t);
+  parent_traverse(t); putchar('\n');
 
   assert(contains(&t, 2));
   assert(contains(&t, 1));
@@ -239,8 +240,8 @@ int main(void)
   assert(contains(&t, 0));
 
 
-  print_stree(&t); putchar('\n');
-  parent_traverse(t);
+  print_stree(&t);    putchar('\n');
+  parent_traverse(t); putchar('\n');
   check_tree(t);
 
   delete(&t, 12);
@@ -250,8 +251,8 @@ int main(void)
   assert(!contains(&t, 3));
   assert(!contains(&t, 6));
 
-  print_stree(&t); putchar('\n');
-  parent_traverse(t);
+  print_stree(&t);    putchar('\n');
+  parent_traverse(t); putchar('\n');
   check_tree(t);
   clear_stree(&t);
 
@@ -259,7 +260,7 @@ int main(void)
   int n = sizeof array / sizeof *array;
   stree *t2 = make_stree(n, array);
   print_stree(t2); putchar('\n');
-  parent_traverse(*t2);
+  parent_traverse(*t2); putchar('\n');
   free_stree(t2);
 
 
