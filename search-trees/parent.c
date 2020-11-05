@@ -178,7 +178,6 @@ void parent_traverse(stree t)
   }
 }
 
-
 void check_tree(stree t)
 {
   if (!t) return;
@@ -239,12 +238,6 @@ void parent_free(stree t)
 
 int main(void)
 {
-#if 0
-  stree t =
-    node(3,
-      node(2, leaf(1), 0),
-      leaf(6));
-#endif
   stree t = 0;
   insert(&t, 3);
   insert(&t, 2);
@@ -273,6 +266,7 @@ int main(void)
   parent_traverse(t); putchar('\n');
   check_tree(t);
 
+  printf("deleting\n");
   delete(&t, 12);
   delete(&t, 3);
   delete(&t, 6);
