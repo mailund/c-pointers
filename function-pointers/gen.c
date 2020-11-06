@@ -36,6 +36,7 @@ void free_exec_buf(void *buf, size_t size)
 }
 
 
+
 // Wrapping generated functions-------------------------------
 #define jit_func(RETTYPE, ...)           \
 struct {                                 \
