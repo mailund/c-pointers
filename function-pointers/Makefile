@@ -1,5 +1,5 @@
 
-tests = higher-order-functions
+tests = higher-order-functions gen
 CFLAGS = -Wall -pedantic
 
 all: $(tests)
