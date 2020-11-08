@@ -1,6 +1,6 @@
 
 tests = higher-order-functions \
-	gen gen-tagged
+	gen int-tag gen-tagged
 CFLAGS = -Wall -pedantic
 
 all: $(tests)
