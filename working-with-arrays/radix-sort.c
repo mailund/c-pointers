@@ -30,6 +30,13 @@ void bucket_sort(int n, int offset,
 
 void radix_sort(int n, int array[n])
 {
+  // It is *very* unlikely that sizeof an integer is odd, but if
+  // it is, you need to move the results from helper
+  // to array. I assume that we have an even number of bytes
+  // because that is practically always true for int
+  static_assert(sizeof *array % 2 == 0,
+                "integer sizes must be powers of two");
+
   // Helper buffer; handle input/output switches
   // when bucket sorting
   int helper[n];
@@ -44,11 +51,6 @@ void radix_sort(int n, int array[n])
     bucket_input = !bucket_input;
   }
 
-  // It is *very* unlikely that sizeof an integer is odd, but if
-  // it is, you need to move the results from helper
-  // to array. I assume that we have an even number of bytes
-  // because that is practically always true for int
-  assert(sizeof *array % 2 == 0);
 }
 
 // Both left and right must point to legal addresses
@@ -107,7 +109,7 @@ void sort_int(int n, int array[n])
     reverse(m, array);
   }
   if (m < n) {
-    radix_sort(n - m, array + m);  
+    radix_sort(n - m, array + m);
   }
 }
 
