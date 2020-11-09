@@ -54,13 +54,12 @@ void free_code_block(void *buf, size_t size)
 // using compiler extension __typeof__ for cast
 #define jit_func(p)     ((__typeof__(p))((uint64_t)p & CODE_PTR_MASK))
 
+// to avoid function/void pointer warnings
+#define jit_free(p) jit_free_void((void*)(p))
 void jit_free_void(void *p)
 {
   free_code_block((void *)jit_func(p), jit_pages(p));
 }
-// to avoid function/void pointer warnings
-#define jit_free(p) jit_free_void((void*)(p))
-
 
 
 void *create_exec_buf(unsigned char const *code, size_t size)

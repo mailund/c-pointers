@@ -3,17 +3,39 @@
 #include <string.h>
 #include <assert.h>
 
-#include <sys/mman.h>
-void *alloc_code_bock(size_t size)
+
+/* Windows would use:
+void *alloc_code_block(size_t size)
 {
-  // allocate page-aligned memory with mmap():
-  char *buf = mmap(
-    0, size,
-    PROT_WRITE, MAP_ANON | MAP_PRIVATE,
-    -1, 0
-  );
-  if (buf == MAP_FAILED) return 0; // NULL for error
-  else return buf;
+  DWORD type = MEM_RESERVE | MEM_COMMIT;
+  return VirtualAlloc(NULL, size, type, PAGE_READWRITE);
+}
+
+void *set_exec_prot(void *buf, size_t size)
+{
+  DWORD old;
+  BOOL res = VirtualProtect(buf, size, PAGE_EXECUTE_READ, &old);
+  return res ? buf : 0;
+}
+
+void free_code_block(void *buf, size_t size)
+{
+  // The function can fail, but we ignore it...
+  VirtualFree(buf, 0, MEM_RELEASE);
+}
+*/
+
+
+#include <sys/mman.h>
+
+// allocate page-aligned memory with mmap()
+void *alloc_code_block(size_t size)
+{
+  int protection = PROT_WRITE;
+  // MAP_ANONYMOUS not POSIX but necessary on some systems
+  int flags = MAP_ANONYMOUS | MAP_PRIVATE;
+  char *buf = mmap(0, size, protection, flags, -1, 0);
+  return (buf != MAP_FAILED) ? buf : 0;
 }
 
 void *set_exec_prot(void *buf, size_t size)
@@ -35,6 +57,9 @@ void free_code_block(void *buf, size_t size)
   munmap(buf, size);
 }
 
+
+
+
 int main(void)
 {
   // Adds two to its input and returns
@@ -42,9 +67,14 @@ int main(void)
     0x8d, 0x47, 0x02,     // lea eax,[rdi+0x2]
     0xc3                  // ret
   };
+  /*
+  Solaris, Linux, FreeBSD and macOS uses the System V AMD64 ABI
+  where the first integer/pointer argument comes in register rdi.
+  On windows, it would come in rcx.
+  */
 
   // Raw memory...
-  void *code_block = alloc_code_bock(sizeof code);
+  void *code_block = alloc_code_block(sizeof code);
   if (!code_block) abort();
   memcpy(code_block, code, sizeof code);
   code_block = set_exec_prot(code_block, sizeof code);
@@ -53,8 +83,6 @@ int main(void)
   int (*f)(int) = (int (*)(int))code_block;
   printf("%d\n", f(3));
   free_code_block(code_block, sizeof code);
-
-
 
   return 0;
 }
