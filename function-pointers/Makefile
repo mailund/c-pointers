@@ -1,5 +1,6 @@
 
-tests = higher-order-functions \
+tests = fp-types \
+  higher-order-functions \
 	gen int-tag gen-tagged
 CFLAGS = -Wall -pedantic
 
