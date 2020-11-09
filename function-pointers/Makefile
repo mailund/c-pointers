@@ -1,6 +1,7 @@
 
 tests = fp-types \
   higher-order-functions \
+	callback \
 	gen int-tag gen-tagged
 CFLAGS = -Wall -pedantic
 
