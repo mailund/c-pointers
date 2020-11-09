@@ -41,6 +41,8 @@ void free_code_block(void *buf, size_t size)
 // from sysconf() from <unistd.h>
 #define PAGESIZE 4096
 
+#define LOW_BITS 0
+#if LOW_BITS
 // You can get the number of free bits from
 // POSIX ffs() from <strings.h>  as ffs(page_size) - 1;
 #define CODE_SIZE_BITS  12
@@ -53,6 +55,32 @@ void free_code_block(void *buf, size_t size)
 #define jit_pages(p)    ((uint64_t)p & CODE_SIZE_MASK)
 // using compiler extension __typeof__ for cast
 #define jit_func(p)     ((__typeof__(p))((uint64_t)p & CODE_PTR_MASK))
+
+#else // HIGH_BITS
+
+#define CODE_SIZE_BITS  16
+#define MAX_CODE_PAGES  ((1ull << CODE_SIZE_BITS) - 1)
+#define CODE_PTR_MASK   ((1ull << 48) - 1)
+#define CODE_SIZE_MASK  (~CODE_PTR_MASK)
+
+#include <stdint.h>
+#define jit_ptr(f,s) \
+  (void *)(((uint64_t)f & CODE_PTR_MASK) | (s << 48))
+#define jit_pages(p) \
+  (((uint64_t)p & CODE_SIZE_MASK) >> 48)
+
+#define upper_bits(p) \
+  ~(((uint64_t)p & (1ull << 47)) - 1) // upper 16 set if 47 set
+#define lower_bits(p) \
+  ((uint64_t)p & CODE_PTR_MASK)
+#define canonical_ptr(p) \
+   (lower_bits(p) | upper_bits(p))
+
+// using compiler extension __typeof__ for cast
+#define jit_func(p) \
+    ((__typeof__(p))(canonical_ptr(p)))
+
+#endif
 
 // to avoid function/void pointer warnings
 #define jit_free(p) jit_free_void((void*)(p))
