@@ -64,7 +64,7 @@ void jit_free_void(void *p)
 
 void *create_exec_buf(unsigned char const *code, size_t size)
 {
-  uint64_t pages = (size - 1) / PAGESIZE + 1;
+  size_t pages = (size + PAGESIZE - 1) / PAGESIZE;
   if (pages > MAX_CODE_PAGES) {
     // some meaningful error handling here...
     // but we are talking about allocating a single
