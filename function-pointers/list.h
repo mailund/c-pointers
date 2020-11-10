@@ -39,40 +39,48 @@ void free_links(list_head *head);
 
 
 // Connect x and y so x's next is y and y's prev is x
-#define connect(x, y) \
-  do { (x)->next = (y); (y)->prev = (x); } while(0)
+static inline
+void connect(struct link *x, struct link *y)
+{
+  x->next = y; y->prev = x;
+}
 
 // If x already has the right next and prev, make those
 // point to x
-#define connect_neighbours(x)  \
-  do {                         \
-    (x)->next->prev = (x);     \
-    (x)->prev->next = (x);     \
-  } while(0)
+static inline
+void connect_neighbours(struct link *x)
+{
+  x->next->prev = x;
+  x->prev->next = (x);
+}
 
 // Make y's prev and next point to x and x->next,
 // then connect it in so its neighbours match
-#define link_after(x, y)    \
-  do {                      \
-    (y)->prev = (x);        \
-    (y)->next = (x)->next;  \
-    connect_neighbours(y);  \
-  } while(0)
-
-#define link_before(x, y)   \
+static inline
+void link_after(struct link *x, struct link *y)
+{
+  y->prev = x;
+  y->next = x->next;
+  connect_neighbours(y);
+}
+#define link_before(x, y) \
   link_after((x)->prev, y)
 
 // Remove x from the list, but leave its
 // pointers so we still have access to its
 // neighbours if we need them
-#define unlink(x)                    \
-  do {                               \
-    (x)->next->prev = (x)->prev;     \
-    (x)->prev->next = (x)->next;     \
-  } while(0)
+static inline
+void unlink(struct link *x)
+{
+  x->next->prev = x->prev;
+  x->prev->next = x->next;
+}
 
-#define delete_link(x) \
-  do { unlink(x); free(x); x = 0; } while(0)
+static inline
+void delete_link(struct link *x)
+{
+  unlink(x); free(x);
+}
 
 int insert_val_after(struct link *after, int val);
 #define insert_val_before(before, val) \

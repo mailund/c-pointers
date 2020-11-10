@@ -3,87 +3,170 @@
 #include "list.h"
 #include "dynarray.h"
 
-typedef void *   stack;
-typedef int       elem;
+typedef void *  impl_stack;
+typedef int     elem;
 
 typedef struct {
-  stack (*new_stack)    (void);
-  bool  (*empty_stack)  (stack);
-  elem  (*top)          (stack);
-  bool  (*push)         (stack, elem);
-  elem  (*pop)          (stack);
-  void  (*free_stack)   (stack);
+  impl_stack (*new_stack)   (void);
+  bool       (*empty_stack) (impl_stack);
+  elem       (*top)         (impl_stack);
+  bool       (*push)        (impl_stack, elem);
+  elem       (*pop)         (impl_stack);
+  void       (*free_stack)  (impl_stack);
 } stack_type;
 
-stack new_stack(stack_type *stype)
+struct stack {
+  void       *impl_stack;
+  stack_type *type;
+};
+typedef struct stack * stack;
+
+stack new_stack(stack_type *type)
 {
-  return stype->new_stack();
+  void *impl_stack = type->new_stack();
+  stack stack = malloc(sizeof *stack);
+  if (!impl_stack || !stack) goto error;
+
+  stack->impl_stack = impl_stack;
+  stack->type = type;
+  return stack;
+
+error:
+  free(stack);
+  if (impl_stack)
+    type->free_stack(impl_stack);
+  return 0;
 }
-bool empty_stack(stack_type *stype, stack stack)
+
+bool empty_stack(stack stack)
 {
-  return stype->empty_stack(stack);
+  return stack->type->empty_stack(stack->impl_stack);
 }
-elem top(stack_type *stype, stack stack)
+elem stack_top(stack stack)
 {
-  return stype->top(stack);
+  return stack->type->top(stack->impl_stack);
 }
-bool push(stack_type *stype, stack stack, elem elem)
+bool stack_push(stack stack, elem elem)
 {
-  return stype->push(stack, elem);
+  return stack->type->push(stack->impl_stack, elem);
 }
-elem pop(stack_type *stype, stack stack)
+elem stack_pop(stack stack)
 {
-  return stype->pop(stack);
+  return stack->type->pop(stack->impl_stack);
 }
-void free_stack(stack_type *stype, stack stack)
+void free_stack(stack stack)
 {
-  stype->free_stack(stack);
+  stack->type->free_stack(stack->impl_stack);
+  free(stack);
 }
 
 // List stack
-stack list_stack_new(void)
+impl_stack list_stack_new(void)
 {
   return new_list();
 }
-bool list_stack_empty(stack stack)
+bool list_stack_empty(impl_stack stack)
 {
-  list x = stack;
-  return front(x) == x;
+  return is_empty((list)stack);
 }
-elem list_stack_top(stack stack)
+elem list_stack_top(impl_stack stack)
 {
-  list x = stack;
-  return front(x)->value;
+  return front((list)stack)->value;
 }
-bool list_stack_push(stack stack, elem elem)
+bool list_stack_push(impl_stack stack, elem elem)
 {
   return prepend(stack, elem);
 }
-elem list_stack_pop(stack stack)
+elem list_stack_pop(impl_stack stack)
 {
-  list x = stack;
-  struct link *top = front(x);
-  elem elem = top->value;
-  delete_link(top);
+  elem elem = front((list)stack)->value;
+  delete_link(front((list)stack));
   return elem;
 }
-void list_stack_free(stack stack)
+void list_stack_free(impl_stack stack)
 {
-  list x = stack;
-  free_list(x);
+  free_list(stack);
 }
+
+stack_type list_stack = {
+  .new_stack   = list_stack_new,
+  .empty_stack = list_stack_empty,
+  .top         = list_stack_top,
+  .push        = list_stack_push,
+  .pop         = list_stack_pop,
+  .free_stack  = list_stack_free
+};
+
+// Dynarray stack
+impl_stack da_stack_new(void)
+{
+  struct dynarray *da = malloc(sizeof *da);
+  if (!da) return 0;
+  if (!da_init(da, 1, 0)) {
+    free(da);
+    return 0;
+  }
+  return da;
+}
+bool da_stack_empty(impl_stack stack)
+{
+  return ((struct dynarray *)stack)->used == 0;
+}
+elem da_stack_top(impl_stack stack)
+{
+  struct dynarray *da = stack;
+  assert(da->used > 0);
+  return da->data[da->used - 1];
+}
+bool da_stack_push(impl_stack stack, elem elem)
+{
+  return da_append(stack, elem);
+}
+elem da_stack_pop(impl_stack stack)
+{
+  struct dynarray *da = stack;
+  assert(da->used > 0);
+  return da->data[--(da->used)];
+}
+void da_stack_free(impl_stack stack)
+{
+  da_dealloc(stack);
+  free(stack);
+}
+
+stack_type da_stack = {
+  .new_stack   = da_stack_new,
+  .empty_stack = da_stack_empty,
+  .top         = da_stack_top,
+  .push        = da_stack_push,
+  .pop         = da_stack_pop,
+  .free_stack  = da_stack_free
+};
 
 
 int main(void)
 {
-  stack stack = list_stack_new();
-  list_stack_push(stack, 1);
-  list_stack_push(stack, 2);
-  while (!list_stack_empty(stack)) {
-    int x = list_stack_pop(stack);
+  // Try with list stack
+  stack stack = new_stack(&list_stack);
+  for (int i = 0; i < 5; i++) {
+    stack_push(stack, i);
+  }
+  while (!empty_stack(stack)) {
+    int x = stack_pop(stack);
     printf("%d\n", x);
   }
-  list_stack_free(stack);
+  free_stack(stack);
+
+  // Try with dynamic array
+  stack = new_stack(&da_stack);
+  for (int i = 0; i < 5; i++) {
+    stack_push(stack, i);
+  }
+  while (!empty_stack(stack)) {
+    int x = stack_pop(stack);
+    printf("%d\n", x);
+  }
+  free_stack(stack);
 
   return 0;
 }
