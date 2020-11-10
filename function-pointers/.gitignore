@@ -2,6 +2,7 @@ fp-types
 higher-order-functions
 callback
 string-iter
+stack
 gen
 int-tag
 gen-tagged
