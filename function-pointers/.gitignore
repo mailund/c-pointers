@@ -3,6 +3,7 @@ higher-order-functions
 callback
 string-iter
 stack
+expr
 gen
 int-tag
 gen-tagged

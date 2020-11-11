@@ -4,6 +4,7 @@ tests = fp-types \
 	callback \
 	string-iter \
 	stack \
+	expr \
 	gen int-tag gen-tagged
 CFLAGS = -Wall -pedantic
 
