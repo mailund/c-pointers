@@ -45,10 +45,12 @@ typedef struct {
   double (*eval) (EXP);
 } base_expr_cls;
 
-void print_expr(EXP e) {
+void print_expr(EXP e)
+{
   vtbl(e, base_expr_cls)->print(e);
 }
-double eval_expr(EXP e) {
+double eval_expr(EXP e)
+{
   return vtbl(e, base_expr_cls)->eval(e);
 }
 
