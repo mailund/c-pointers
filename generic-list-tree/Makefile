@@ -1,10 +1,11 @@
 
-tests = list-experiments
+lists = casting offset
+tests = $(lists)
 CFLAGS = -Wall -pedantic
 
 all: $(tests)
 
-list-experiments: %: %.c list.o
+$(lists): %: %.c list.o
 	cc $(CFLAGS) $< list.o -o $@
 
 list.o: list.c list.h
