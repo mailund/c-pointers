@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 typedef void * cls;
-typedef struct { cls *cls; } obj;
+typedef struct obj { cls *cls; } obj;
 
 #define basetype(x, base) ((base *)x)
 #define vtbl(inst, base)  basetype(((obj *)inst)->cls, base)
@@ -36,7 +37,7 @@ void *alloc_obj(size_t obj_size, cls cls)
 typedef struct base_expr *EXP;
 
 // Base class, class definition
-typedef struct {
+typedef struct base_expr_cls {
   void   (*print)(EXP);
   double (*eval) (EXP);
 } base_expr_cls;
@@ -52,17 +53,17 @@ void init_base_expr_cls(base_expr_cls *cls)
 }
 
 // Base class, object definition
-typedef struct { obj obj; } base_expr;
+typedef struct base_expr { obj obj; } base_expr;
 
 // Base class, methods (init does nothing)
 void init_base_expr(base_expr *inst) {}
 
 
 // Value expressions
-typedef struct {
+typedef struct value_expr_cls {
   base_expr_cls base_expr_cls;
 } value_expr_cls;
-typedef struct {
+typedef struct value_expr {
   base_expr base_expr;
   double value;
 } value_expr;
@@ -105,10 +106,10 @@ EXP value(double value)
 }
 
 // Binary expressions
-typedef struct {
+typedef struct binexpr_cls {
   base_expr_cls base_expr_cls;
 } binexpr_cls;
-typedef struct {
+typedef struct binexpr {
   base_expr base_expr;
   char symb; EXP left, right;
 } binexpr;
@@ -137,8 +138,12 @@ void init_binexpr(binexpr *binop, char symb,
 }
 
 // Addition
-typedef struct { binexpr_cls binexpr_cls; } add_expr_cls;
-typedef struct { binexpr binexpr;         } add_expr;
+typedef struct add_expr_cls {
+  binexpr_cls binexpr_cls;
+} add_expr_cls;
+typedef struct add_expr {
+  binexpr binexpr;
+} add_expr;
 
 // Concrete class, so must have a struct
 add_expr_cls *ADD_EXPR_CLS = 0; // must be initialised
@@ -171,8 +176,12 @@ EXP add(EXP left, EXP right)
 }
 
 // Subtraction
-typedef struct { binexpr_cls binexpr_cls; } sub_expr_cls;
-typedef struct { binexpr binexpr;         } sub_expr;
+typedef struct sub_expr_cls {
+  binexpr_cls binexpr_cls;
+} sub_expr_cls;
+typedef struct sub_expr {
+  binexpr binexpr;
+} sub_expr;
 
 // Concrete class, so must have a struct
 sub_expr_cls *SUB_EXPR_CLS = 0; // must be initialised
@@ -204,13 +213,84 @@ EXP sub(EXP left, EXP right)
   return (EXP)expr;
 }
 
+// Variables
+typedef struct var_expr *VAR;
+typedef struct var_expr_cls {
+  base_expr_cls base_expr_cls;
+  void (*bind)  (VAR var, EXP val);
+  void (*unbind)(VAR var);
+} var_expr_cls;
+typedef struct var_expr {
+  base_expr base_expr;
+  char const *name;
+  double value;
+} var_expr;
+
+// new virtual functions
+void bind(VAR var, EXP e) { vtbl(var, var_expr_cls)->bind(var, e); }
+void unbind(VAR var)      { vtbl(var, var_expr_cls)->unbind(var); }
+
+// implementations of new virtual functions
+void var_expr_bind  (VAR var, EXP e) { var->value = eval(e); }
+void var_expr_unbind(VAR var)        { var->value = NAN; }
+
+// Concrete class, so must have a struct
+var_expr_cls *VAR_EXPR_CLS = 0; // must be initialised
+
+// overriding virtual functions
+void var_expr_print(VAR var)
+{
+  if (isnan(var->value)) { // isnan from <math.h>
+    printf("%s", var->name);
+  } else {
+    printf("%f", var->value);
+  }
+}
+
+double var_expr_eval(VAR var)
+{
+  return var->value;
+}
+
+void init_var_expr_cls(var_expr_cls *cls)
+{
+  init_base_expr_cls(basetype(cls, base_expr_cls));
+  // override virtual functions
+  base_expr_cls *base_expr = basetype(cls, base_expr_cls);
+  base_expr->print = (void (*)(EXP))var_expr_print;
+  base_expr->eval  = (double (*)(EXP))var_expr_eval;
+  // new virtual functions
+  cls->bind = var_expr_bind;
+  cls->unbind = var_expr_unbind;
+}
+
+void init_var_expr(var_expr *var, char const *name)
+{
+  init_base_expr(basetype(var, base_expr));
+  var->name = name;
+  var->value = NAN; // NAN from <math.h>
+}
+
+// constructor
+VAR var(char const *name)
+{
+  INIT_CLS(VAR_EXPR_CLS, init_var_expr_cls);
+  VAR var = NEW_OBJ(var, VAR_EXPR_CLS);
+  init_var_expr(var, name);
+  return var;
+}
+
 int main(void)
 {
-  EXP expr =
-    add(value(1.0),
-        sub(value(10.0),
-            value(2.0))
-    );
+  VAR x = var("x");
+  EXP expr = add(value(1.0), sub((EXP)x, value(2.0)));
+  // prints 'x' for x and evaluates to nan
+  print(expr); putchar('\n');
+  printf("evaluates to %f\n", eval(expr));
+
+  // set x to 42
+  bind(x, add(value(40.0), value(2.0)));
+  // now prints 42 for x ane evaluates to 41
   print(expr); putchar('\n');
   printf("evaluates to %f\n", eval(expr));
 
