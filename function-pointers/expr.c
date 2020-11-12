@@ -8,18 +8,18 @@ typedef struct obj { cls *cls; } obj;
 #define basetype(x, base) ((base *)x)
 #define vtbl(inst, base)  basetype(((obj *)inst)->cls, base)
 
-typedef void (*cls_init)(cls *);
-void *alloc_cls(size_t cls_size, cls_init cls_init)
+void *alloc_cls(size_t cls_size)
 {
   cls *cls = malloc(cls_size);
   if (!cls) abort(); // error handling
-  cls_init(cls);
   return cls;
 }
-#define INIT_CLS(p, init)                     \
-do {                                          \
-  if (!p)                                     \
-    p = alloc_cls(sizeof *p, (cls_init)init); \
+#define INIT_CLS(p, init)     \
+do {                          \
+  if (!p) {                   \
+    p = alloc_cls(sizeof *p); \
+    init(p);                  \
+  }                           \
 } while(0)
 
 void *alloc_obj(size_t obj_size, cls cls)
