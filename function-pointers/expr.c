@@ -82,7 +82,7 @@ typedef struct {
 } value_expr;
 
 // Concrete class, so must have a struct
-value_expr_cls *VALUE_EXPR_CLS; // must be initialised
+value_expr_cls *VALUE_EXPR_CLS = 0; // must be initialised
 
 void value_expr_print(value_expr *val)
 {
@@ -118,7 +118,7 @@ EXP value(double value)
   return (EXP)val;
 }
 
-// Binary expressoins
+// Binary expressions
 typedef struct {
   base_expr_cls base_expr_cls;
 } binary_expr_cls;
@@ -164,7 +164,7 @@ typedef struct {
 } add_expr;
 
 // Concrete class, so must have a struct
-add_expr_cls *ADD_EXPR_CLS; // must be initialised
+add_expr_cls *ADD_EXPR_CLS = 0; // must be initialised
 
 
 double eval_add_expr(add_expr *expr)
@@ -205,7 +205,7 @@ typedef struct {
 } sub_expr;
 
 // Concrete class, so must have a struct
-sub_expr_cls *SUB_EXPR_CLS; // must be initialised
+sub_expr_cls *SUB_EXPR_CLS = 0; // must be initialised
 
 
 double eval_sub_expr(sub_expr *expr)
