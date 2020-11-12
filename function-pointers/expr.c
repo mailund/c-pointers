@@ -70,14 +70,14 @@ typedef struct value_expr {
 // Concrete class, so must have a struct
 value_expr_cls *VALUE_EXPR_CLS = 0; // must be initialised
 
-void value_expr_print(value_expr *val)
+void value_expr_print(EXP val)
 {
-  printf("%.3f", val->value);
+  printf("%.3f", ((value_expr *)val)->value);
 }
 
-double value_expr_eval(value_expr *val)
+double value_expr_eval(EXP val)
 {
-  return val->value;
+  return ((value_expr *)val)->value;
 }
 
 void init_value_expr_cls(value_expr_cls *cls)
@@ -85,8 +85,8 @@ void init_value_expr_cls(value_expr_cls *cls)
   init_base_expr_cls(basetype(cls, base_expr_cls));
   // override virtual functions
   base_expr_cls *base_expr = basetype(cls, base_expr_cls);
-  base_expr->print = (void (*)(EXP))value_expr_print;
-  base_expr->eval  = (double (*)(EXP))value_expr_eval;
+  base_expr->print = value_expr_print;
+  base_expr->eval  = value_expr_eval;
 }
 
 void init_value_expr(value_expr *val, double value)
@@ -113,8 +113,9 @@ typedef struct binexpr {
   char symb; EXP left, right;
 } binexpr;
 
-void print_binexpr(binexpr *binop)
+void print_binexpr(EXP exp)
 {
+  binexpr *binop = (binexpr *)exp;
   putchar('('); print(binop->left); putchar(')');
   putchar(binop->symb);
   putchar('('); print(binop->right); putchar(')');
@@ -124,7 +125,7 @@ void init_binexpr_cls(binexpr_cls *cls)
 {
   init_base_expr_cls(basetype(cls, base_expr_cls));
   base_expr_cls *base_expr = basetype(cls, base_expr_cls);
-  base_expr->print = (void (*)(EXP))print_binexpr;
+  base_expr->print = print_binexpr;
 }
 
 void init_binexpr(binexpr *binop, char symb,
@@ -147,7 +148,7 @@ typedef struct add_expr {
 // Concrete class, so must have a struct
 add_expr_cls *ADD_EXPR_CLS = 0; // must be initialised
 
-double eval_add_expr(add_expr *expr)
+double eval_add_expr(EXP expr)
 {
   binexpr *base = basetype(expr, binexpr);
   return eval(base->left) + eval(base->right);
@@ -157,7 +158,7 @@ void init_add_expr_cls(add_expr_cls *cls)
 {
   init_binexpr_cls(basetype(cls, binexpr_cls));
   base_expr_cls *base_expr = basetype(cls, base_expr_cls);
-  base_expr->eval = (double (*)(EXP))eval_add_expr;
+  base_expr->eval = eval_add_expr;
 }
 
 void init_add_expr(add_expr *expr, EXP left, EXP right)
@@ -185,7 +186,7 @@ typedef struct sub_expr {
 // Concrete class, so must have a struct
 sub_expr_cls *SUB_EXPR_CLS = 0; // must be initialised
 
-double eval_sub_expr(sub_expr *expr)
+double eval_sub_expr(EXP expr)
 {
   binexpr *base = basetype(expr, binexpr);
   return eval(base->left) - eval(base->right);
@@ -195,7 +196,7 @@ void init_sub_expr_cls(sub_expr_cls *cls)
 {
   init_binexpr_cls(basetype(cls, binexpr_cls));
   base_expr_cls *base_expr = basetype(cls, base_expr_cls);
-  base_expr->eval = (double (*)(EXP))eval_sub_expr;
+  base_expr->eval = eval_sub_expr;
 }
 
 void init_sub_expr(add_expr *expr, EXP left, EXP right)
@@ -237,8 +238,9 @@ void var_expr_unbind(VAR var)        { var->value = NAN; }
 var_expr_cls *VAR_EXPR_CLS = 0; // must be initialised
 
 // overriding virtual functions
-void var_expr_print(VAR var)
+void var_expr_print(EXP expr)
 {
+  VAR var = (VAR)expr;
   if (isnan(var->value)) { // isnan from <math.h>
     printf("%s", var->name);
   } else {
@@ -246,8 +248,9 @@ void var_expr_print(VAR var)
   }
 }
 
-double var_expr_eval(VAR var)
+double var_expr_eval(EXP expr)
 {
+  VAR var = (VAR)expr;
   return var->value;
 }
 
@@ -256,8 +259,8 @@ void init_var_expr_cls(var_expr_cls *cls)
   init_base_expr_cls(basetype(cls, base_expr_cls));
   // override virtual functions
   base_expr_cls *base_expr = basetype(cls, base_expr_cls);
-  base_expr->print = (void (*)(EXP))var_expr_print;
-  base_expr->eval  = (double (*)(EXP))var_expr_eval;
+  base_expr->print = var_expr_print;
+  base_expr->eval  = var_expr_eval;
   // new virtual functions
   cls->bind = var_expr_bind;
   cls->unbind = var_expr_unbind;
