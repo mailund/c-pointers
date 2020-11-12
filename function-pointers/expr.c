@@ -54,7 +54,6 @@ void init_base_expr_cls(base_expr_cls *cls)
 
 // Base class, object definition
 typedef struct base_expr { obj obj; } base_expr;
-
 // Base class, methods (init does nothing)
 void init_base_expr(base_expr *inst) {}
 
