@@ -86,7 +86,7 @@ void delete(stree *t, int val)
     stree t = *loc;
     if (!(t->left && t->right)) {
       *loc = t->left ? t->left : t->right;
-      (*loc)->parent = parent;
+      if (*loc) (*loc)->parent = parent;
       free(t); allocated--;
 
     } else {
@@ -95,7 +95,7 @@ void delete(stree *t, int val)
       stree rm = *rm_ref;
       t->value = rm->value;
       *rm_ref = rm->left;
-      (*rm_ref)->parent = parent;
+      if (*rm_ref) (*rm_ref)->parent = parent;
       free(rm); allocated--;
     }
   }
@@ -239,8 +239,8 @@ void parent_free(stree t)
 int main(void)
 {
   stree t = 0;
-  insert(&t, 3);
   insert(&t, 2);
+  insert(&t, 3);
   insert(&t, 1);
   insert(&t, 6);
 

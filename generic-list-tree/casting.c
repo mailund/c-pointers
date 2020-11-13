@@ -5,34 +5,34 @@
 #include "list.h"
 
 struct int_link {
-  struct link link;
+  link link;
   int value;
 };
 typedef struct int_link ilink;
 
-struct int_link *new_int_link(int value)
+ilink *new_int_link(int value)
 {
-  ilink *link = malloc(sizeof *link);
-  if (link) link->value = value;
-  return link;
+  ilink *lnk = malloc(sizeof *lnk);
+  if (lnk) lnk->value = value;
+  return lnk;
 }
 
-void print_int_link(struct link *link)
+void print_int_link(link *lnk)
 {
-  printf("%d", ((ilink *)link)->value);
+  printf("%d", ((ilink *)lnk)->value);
 }
 
-void free_int_link(struct link *link)
+void free_int_link(link *lnk)
 {
-  free(link); // Nothing special
+  free(lnk); // Nothing special
 }
 
-struct list_type int_list = {
+list_type int_list = {
   .free = free_int_link,
   .print = print_int_link
 };
 
-bool is_even(struct link *l)
+bool is_even(link *l)
 {
   ilink *link = (ilink *)l;
   return link->value % 2 == 0;
@@ -40,21 +40,23 @@ bool is_even(struct link *l)
 
 int main(void)
 {
-  struct list *x = new_list(int_list);
+  list *x = new_list(int_list);
   for (int i = 0; i < 10; i++) {
-    struct int_link *link = new_int_link(i);
-    if (!link) abort();
-    append(x, (struct link *)link);
+    ilink *lnk = new_int_link(i);
+    if (!lnk) abort();
+    append(x, (link *)lnk);
   }
   print_list(x);
 
-  ilink *link = (ilink *)find_link(x, front(x), is_even);
-  printf("%d\n", link->value);
-  link = (ilink *)find_link(x, link->link.next, is_even);
-  printf("%d\n", link->value);
+  ilink *lnk = (ilink *)find_link(x, front(x), is_even);
+  printf("%d\n", lnk->value);
+  lnk = (ilink *)find_link(x, lnk->link.next, is_even);
+  printf("%d\n", lnk->value);
 
-  for_each_iter_args(link, x, find_link, is_even) {
-    printf("%d ", ((ilink *)link)->value);
+  for (link *lnk = find_link(x, front(x), is_even);
+       lnk != head(x);
+       lnk = find_link(x, lnk, is_even)) {
+    printf("%d ", ((ilink *)lnk)->value);
   }
   printf("\n");
 

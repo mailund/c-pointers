@@ -5,12 +5,11 @@
 
 #include "list.h"
 
-struct double_link {
-  struct link forward_link;
-  struct link backward_link;
+typedef struct double_link {
+  link forward_link;
+  link backward_link;
   int value;
-};
-typedef struct double_link dlink;
+} dlink;
 
 dlink *new_dlink(int value)
 {
@@ -28,11 +27,11 @@ void print_dlink(dlink *link)
   printf("%d", link->value);
 }
 
-void print_forward(struct link *link)
+void print_forward(link *link)
 {
   print_dlink(container(link, dlink, forward_link));
 }
-void print_backward(struct link *link)
+void print_backward(link *link)
 {
   print_dlink(container(link, dlink, backward_link));
 }
@@ -45,25 +44,25 @@ void free_dlink(dlink *link)
   unlink(&link->backward_link);
   free(link);
 }
-void free_forward(struct link *link)
+void free_forward(link *link)
 {
   free_dlink(container(link, dlink, forward_link));
 }
-void free_backward(struct link *link)
+void free_backward(link *link)
 {
   free_dlink(container(link, dlink, backward_link));
 }
 
-struct list_type forward_type = {
+list_type forward_type = {
   .free  = free_forward,
   .print = print_forward
 };
-struct list_type backward_type = {
+list_type backward_type = {
   .free  = free_backward,
   .print = print_backward
 };
 
-bool is_forward_even(struct link *l)
+bool is_forward_even(link *l)
 {
   dlink *link = container(l, dlink, forward_link);
   return link->value % 2 == 0;
@@ -71,8 +70,8 @@ bool is_forward_even(struct link *l)
 
 int main(void)
 {
-  struct list *forward = new_list(forward_type);
-  struct list *backward = new_list(backward_type);
+  list *forward = new_list(forward_type);
+  list *backward = new_list(backward_type);
   if (!forward || !backward) abort(); // error handling
 
   for (int i = 0; i < 10; i++) {

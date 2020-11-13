@@ -4,9 +4,9 @@
 
 #include "list.h"
 
-struct list *new_list(struct list_type type)
+list *new_list(list_type type)
 {
-  struct list *list = malloc(sizeof *list);
+  list *list = malloc(sizeof *list);
   if (list) {
     *list = (struct list){
       .head = { .next = &list->head,
@@ -18,60 +18,60 @@ struct list *new_list(struct list_type type)
 }
 
 
-void free_list(struct list *x)
+void free_list(list *x)
 {
-  void (*free_link)(struct link *) = x->type.free;
+  void (*free_link)(link *) = x->type.free;
   // We can only free if we have a free function.
   // Otherwise, assume that we shouldn't free.
   if (free_link) {
-    struct link *link = front(x);
-    while (link != head(x)) {
-        struct link *next = link->next;
-        free_link(link);
-        link = next;
+    link *lnk = front(x);
+    while (lnk != head(x)) {
+        link *next = lnk->next;
+        free_link(lnk);
+        lnk = next;
     }
   }
   free(x);
 }
 
 // Default print function
-static void print_link(struct link *link)
+static void print_link(link *lnk)
 {
-  printf("<link %p>", (void *)link);
+  printf("<link %p>", (void *)lnk);
 }
 
-void print_list(struct list *x)
+void print_list(list *x)
 {
-  void (*print)(struct link *) =
+  void (*print)(link *) =
     (x->type.print) ? x->type.print : print_link;
   printf("[ ");
-  for_each(link, x) {
-    print(link);
+  for (link *lnk = front(x);
+       lnk != head(x); lnk = lnk->next) {
+    print(lnk);
     putchar(' ');
   }
   printf("]\n");
 }
 
-struct link *find_link(struct list *x,
-                       struct link *from,
-                       bool (*p)(struct link *))
+link *find_link(list *x, link *from, bool (*p)(link *))
 {
-  for_each_from(link, x, from) {
-    if (p(link)) return link;
+  for (link *lnk = from;
+       lnk != head(x); lnk = lnk->next) {
+    if (p(lnk)) return lnk;
   }
   return &x->head; // head indicates the end
 }
 
-void delete_if(struct list *x, bool (*p)(struct link *))
+void delete_if(list *x, bool (*p)(link *))
 {
-  void (*free)(struct link *) = x->type.free;
-  struct link *link = front(x);
-  while (link != head(x)) {
-    struct link *next = link->next;
-    if (p(link)) {
-      unlink(link);
-      if (free) free(link);
+  void (*free)(link *) = x->type.free;
+  link *lnk = front(x);
+  while (lnk != head(x)) {
+    link *next = lnk->next;
+    if (p(lnk)) {
+      unlink(lnk);
+      if (free) free(lnk);
     }
-    link = next;
+    lnk = next;
   }
 }
