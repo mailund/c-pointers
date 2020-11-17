@@ -143,7 +143,6 @@ void print_stree_indent(stree *t, int indent)
 
 #define left_child(t) \
   ((t)->parent && (t)->parent->left == (t))
-
 void parent_traverse(stree t)
 {
   enum { DOWN, UP } state = DOWN;
