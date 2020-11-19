@@ -24,7 +24,7 @@ typedef struct stree {
 stree    *new_tree(stree_type type);
 #define empty_tree(t) ((t)->root.left == 0)
 void    print_tree(stree *tree);
-bool   insert_node(stree *tree, node *n);
+void   insert_node(stree *tree, node *n);
 node    *find_node(stree *tree, void const *key);
 void   remove_node(node *n);
 void   delete_node(stree *tree, node *n);
