@@ -26,14 +26,10 @@ struct link *decref(struct link *link)
   return link;
 }
 
-#warning debugging info
-int links;
-
 void free_link(struct link *link)
 {
   decref(link->next);
   free(link);
-  links--;
 }
 
 // Empty lists and errors
@@ -55,22 +51,20 @@ struct link NIL_LINK = { .refcount = 1 };
 #define borrows
 
 
-list cons(int head, takes list tail)
+list new_link(int head, takes list tail)
 {
   if (is_error(tail)) return tail;
 
-  list new_link = malloc(sizeof *new_link);
-  if (!new_link) { decref(tail); return 0; }
+  list link = malloc(sizeof *link);
+  if (!link) { decref(tail); return 0; }
 
-#warning debug info
-  links++;
   struct link link_data = {
     .refcount = 1,
     .next  = give(tail), // gives away the reference
     .value = head
   };
-  memcpy(new_link, &link_data, sizeof *new_link);
-  return new_link;
+  memcpy(link, &link_data, sizeof *link);
+  return give(link);
 }
 
 void print_list(borrows list x)
@@ -103,6 +97,7 @@ int length_rec(takes list x, int acc)
   if (is_nil(x)) {
     decref(x);
     return acc;
+
   } else {
     struct link *next = incref(x->next);
     decref(x);
@@ -123,7 +118,7 @@ list reverse_rec(borrows list x, borrows list acc)
   if (is_nil(x)) {
     return acc;
   } else {
-    return reverse_rec(x->next, cons(x->value, acc));
+    return reverse_rec(x->next, new_link(x->value, acc));
   }
 }
 
@@ -145,7 +140,7 @@ list reverse_rec(takes list x, takes list acc)
     int value = x->value;
     struct link *next = incref(x->next);
     decref(x);
-    return reverse_rec(give(next), cons(value, acc));
+    return reverse_rec(give(next), new_link(value, acc));
   }
 }
 
@@ -163,7 +158,7 @@ list concat(borrows list x, borrows list y)
   if (is_nil(x)) {
     return incref(y); // we return a new ref, so we must incref here
   } else {
-    return cons(x->value, concat(x->next, y));
+    return new_link(x->value, concat(x->next, y));
   }
 }
 
@@ -181,7 +176,7 @@ list concat(takes list x, takes list y)
     int value = x->value;
     struct link *next = incref(x->next);
     decref(x);
-    return cons(value, concat(give(next), give(y)));
+    return new_link(value, concat(give(next), give(y)));
   }
 }
 
@@ -192,51 +187,48 @@ list concat(takes list x, takes list y)
 int main(void)
 {
   printf("CONSTRUCTION\n");
-  list x = cons(1, cons(2, cons(3, NIL)));
+  list x = new_link(1, new_link(2, new_link(3, NIL)));
   print_list(x);
 
-  list y = cons(0, incref(x));
+  list y = new_link(0, incref(x));
   print_list(y);
 
   decref(x);
   print_list(y);
 
-  list z = cons(-1, give(y)); // consider y gone!
+  list z = new_link(-1, give(y)); // consider y gone!
   print_list(z);
   decref(z);
 
-  printf("\n%d links left\n\n", links);
 
   printf("LENGTH\n");
-  x = cons(1, cons(2, cons(3, NIL)));
+  x = new_link(1, new_link(2, new_link(3, NIL)));
   print_list(x);
   printf("len(x) == %d\n", length(incref(x)));
   print_list(x);
   // leaks if length doesn't free its input
-  printf("len(x) == %d\n", length(cons(1, cons(2, cons(3, NIL)))));
+  printf("len(x) == %d\n", length(new_link(1, new_link(2, new_link(3, NIL)))));
 
   //decref(x);
   // this frees x
   length(give(x));
 
-  printf("\n%d links left\n\n", links);
 
   printf("REVERSE\n");
 
-  x = cons(1, cons(2, cons(3, NIL)));
+  x = new_link(1, new_link(2, new_link(3, NIL)));
   print_list(x);
   y = reverse(give(x));
   print_list(y);
   decref(y);
 
   // would leak if reverse and length didn't free their input
-  printf("%d\n", length(reverse(cons(1, cons(2, cons(3, NIL))))));
+  printf("%d\n", length(reverse(new_link(1, new_link(2, new_link(3, NIL))))));
 
-  printf("\n%d links left\n\n", links);
 
   printf("CONCAT\n");
-  x = cons(1, cons(2, cons(3, NIL)));
-  y = cons(4, cons(5, NIL));
+  x = new_link(1, new_link(2, new_link(3, NIL)));
+  y = new_link(4, new_link(5, NIL));
   z = concat(incref(x), incref(y));
 
   print_list(z);
@@ -244,11 +236,10 @@ int main(void)
   print_list(z);
   decref(z);
 
-  z = concat(cons(1, cons(2, NIL)), cons(11, cons(12, cons(13, NIL))));
+  z = concat(new_link(1, new_link(2, NIL)), new_link(11, new_link(12, new_link(13, NIL))));
   print_list(z);
   decref(z);
 
-  printf("\n%d links left\n\n", links);
-
+  
   return 0;
 }

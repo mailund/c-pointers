@@ -1,5 +1,5 @@
 
-tests = lists
+tests = lists extension-lists
 
 all: $(tests)
 
