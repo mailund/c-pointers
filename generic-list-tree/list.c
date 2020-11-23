@@ -56,10 +56,11 @@ void print_list(list *x)
 link *find_link(list *x, link *from, bool (*p)(link *))
 {
   for (link *lnk = from;
-       lnk != head(x); lnk = lnk->next) {
+       lnk != head(x);
+       lnk = lnk->next) {
     if (p(lnk)) return lnk;
   }
-  return &x->head; // head indicates the end
+  return 0;
 }
 
 void delete_if(list *x, bool (*p)(link *))

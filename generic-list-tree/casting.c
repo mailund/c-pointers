@@ -54,8 +54,8 @@ int main(void)
   printf("%d\n", lnk->value);
 
   for (link *lnk = find_link(x, front(x), is_even);
-       lnk != head(x);
-       lnk = find_link(x, lnk, is_even)) {
+       lnk;
+       lnk = find_link(x, lnk->next, is_even)) {
     printf("%d ", ((ilink *)lnk)->value);
   }
   printf("\n");

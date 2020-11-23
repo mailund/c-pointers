@@ -37,23 +37,20 @@ node **find_loc(stree *tree, void const *key,
   return n;
 }
 
-// Different semantics from before. Now it returns true
-// if we inserted the node (so the tree now owns the memory)
-// and false if the value was already there (in which case
-// the x node should be freed). The function cannot fail.
-bool insert_node(stree *tree, node *n)
+void insert_node(stree *tree, node *n)
 {
   node *parent = &tree->root;
   node **real_tree = &parent->left;
   void const *key = tree->type.key(n);
   node **target = find_loc(tree, key, real_tree, &parent);
 
-  if (*target) return false; // already there, wasn't inserted
+  if (*target) { // remove the old node
+    delete_node(tree, *target);
+  }
 
   *target = n;
   n->parent = parent;
   n->left = n->right = 0; // leaf
-  return true;
 }
 
 node *find_node(stree *tree, void const *key)
