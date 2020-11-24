@@ -1,5 +1,5 @@
 
-tests = lists extension-lists
+tests = lists extension-lists refcount
 
 all: $(tests)
 
