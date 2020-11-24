@@ -2,24 +2,32 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "refcount.h"
+
 #include <stddef.h>   // for max_align_t
 #include <stdalign.h> // for alignof
 #define MAXALIGN alignof(max_align_t)
 
 struct refcount {
-  size_t rc;
+  // We either have a reference count or we are deleting
+  // using a stack.
+  union { size_t rc; void *stack; };
+  // Callback function for user-defined objects
   void (*cleanup)(void *, void *);
-  void *stack;
 };
 
-// On my machine, I need two MAXALIGN to fit the refcount structure.
+// On my machine, I need MAXALIGN to fit the refcount structure.
+// The union of size_t and void * takes 8 bytes and the function pointer
+// another 8 bytes, and max_align_t has alignment 16.
 // You will have to check on your machine as well...
-#define REFCOUNT_MEM (MAXALIGN << 1)
+#define REFCOUNT_MEM MAXALIGN
 
 #define refcount_mem(p) \
   (struct refcount *)((char *)p - REFCOUNT_MEM)
 #define user_mem(rc) \
   (void *)((char *)rc + REFCOUNT_MEM)
+
+
 
 void *rc_alloc(size_t size, void (*cleanup)(void *, void *))
 {
@@ -31,14 +39,9 @@ void *rc_alloc(size_t size, void (*cleanup)(void *, void *))
 
   rc->rc = 1;
   rc->cleanup = cleanup;
-  rc->stack = 0; // FIXME
 
   return user_mem(rc);
 }
-
-void *incref(void *p);
-void *decref(void *p);
-
 
 void *incref(void *p)
 {
@@ -50,7 +53,6 @@ void *incref(void *p)
 
 void cleanup(struct refcount *stack)
 {
-  printf("cleanup!\n");
   while (stack) {
     if (stack->cleanup)
       stack->cleanup(user_mem(stack), stack);
@@ -66,9 +68,9 @@ void *decref_ctx(void *p, void *ctx)
 
   struct refcount *rc = refcount_mem(p);
   if (--rc->rc == 0) {
+    rc->stack = 0; // probably already is, with rc == 0, but still...
     if (ctx) {
       // Schedule for deletion
-      printf("schedule for deletion...\n");
       struct refcount *stack = ctx;
       rc->stack = stack->stack;
       stack->stack = rc;
@@ -80,66 +82,4 @@ void *decref_ctx(void *p, void *ctx)
   }
 
   return p;
-}
-
-#define decref(p) decref_ctx(p, 0)
-
-
-#define borrows
-#define takes
-#define give(x) x
-
-struct node {
-  int val;
-  struct node *left, *right;
-};
-
-void free_node(void *p, void *ctx)
-{
-  struct node *n = p;
-  printf("freeing node %d\n", n->val);
-  decref_ctx(n->left, ctx);
-  decref_ctx(n->right, ctx);
-}
-
-struct node *new_node(int val, takes struct node *left, takes struct node *right)
-{
-  struct node *n = rc_alloc(sizeof *n, free_node);
-  if (n) {
-    n->val = val;
-    n->left = give(left);
-    n->right = give(right);
-  }
-  return n;
-}
-
-void print_tree(struct node *n)
-{
-  if (!n) return;
-  putchar('(');
-    print_tree(n->left);
-    printf(",%d,", n->val);
-    print_tree(n->right);
-  putchar(')');
-}
-
-int main(void)
-{
-  struct node *x = new_node(1, new_node(0, 0, 0),
-                               new_node(3, new_node(2, 0, 0), 0));
-  print_tree(x); putchar('\n');
-
-  struct node *y = new_node(10, new_node(9, 0, 0), new_node(11, 0, 0));
-  struct node *z = new_node(5, incref(x), incref(y));
-  print_tree(z); putchar('\n');
-
-  decref(x);
-  print_tree(z); putchar('\n'); // z is still here...
-  decref(z);
-  print_tree(y); putchar('\n'); // y is still here...
-
-  // free the rest
-  decref(y);
-
-  return 0;
 }
