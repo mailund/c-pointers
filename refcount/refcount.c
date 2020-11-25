@@ -2,11 +2,17 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "refcount.h"
 
 #include <stddef.h>   // for max_align_t
 #include <stdalign.h> // for alignof
 #define MAXALIGN alignof(max_align_t)
+// On my machine, I need MAXALIGN to fit the refcount structure.
+// The union of size_t and void * takes 8 bytes and the function pointer
+// another 8 bytes, and max_align_t has alignment 16.
+// You will have to check on your machine as well...
+#define REFCOUNT_MEM MAXALIGN
+
+#include "refcount.h"
 
 struct refcount {
   // We either have a reference count or we are deleting
@@ -15,12 +21,6 @@ struct refcount {
   // Callback function for user-defined objects
   void (*cleanup)(void *, void *);
 };
-
-// On my machine, I need MAXALIGN to fit the refcount structure.
-// The union of size_t and void * takes 8 bytes and the function pointer
-// another 8 bytes, and max_align_t has alignment 16.
-// You will have to check on your machine as well...
-#define REFCOUNT_MEM MAXALIGN
 
 #define refcount_mem(p) \
   (struct refcount *)((char *)p - REFCOUNT_MEM)
