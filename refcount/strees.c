@@ -32,7 +32,7 @@ size_t nodes;
 
 void free_node(void *p, void *ctx)
 {
-  nodes--; // FIXME: debug
+  nodes--;
   struct node *n = p;
   printf("freeing node %d\n", n->val);
   decref_ctx(n->left, ctx);
@@ -43,6 +43,10 @@ struct node *new_node(int val,
                       takes struct node *left,
                       takes struct node *right)
 {
+  if (is_error(left) || is_error(right)) {
+    decref(left); decref(right);
+    return 0;
+  }
   struct node *n = rc_alloc(sizeof *n, free_node);
   nodes++; // FIXME: debug
   if (n) {
@@ -57,6 +61,7 @@ struct node *new_node(int val,
 
 bool contains(borrows struct node *tree, int val)
 {
+  assert(!is_error(tree));
   if (is_empty(tree))   return false;
   if (tree->val == val) return true;
   if (val < tree->val)  return contains(tree->left, val);
