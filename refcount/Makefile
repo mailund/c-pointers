@@ -1,5 +1,5 @@
 
-tests = lists extension-lists
+tests = intrc lists extension-lists
 
 all: $(tests) strees
 

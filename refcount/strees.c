@@ -70,6 +70,7 @@ bool contains(borrows struct node *tree, int val)
 
 struct node *insert(takes struct node *tree, int val)
 {
+  if (is_error(tree)) return 0;
   if (is_empty(tree)) {
     decref(tree);
     return new_node(val, EMPT, EMPT);
