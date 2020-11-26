@@ -116,9 +116,9 @@ list reverse_rec(borrows list x, borrows list acc)
     return 0;
   }
   if (is_nil(x)) {
-    return acc;
+    return incref(acc);
   } else {
-    return reverse_rec(x->next, new_link(x->value, acc));
+    return reverse_rec(x->next, new_link(x->value, incref(acc)));
   }
 }
 
@@ -158,7 +158,7 @@ list concat(borrows list x, borrows list y)
   if (is_nil(x)) {
     return incref(y); // we return a new ref, so we must incref here
   } else {
-    return new_link(x->value, concat(x->next, y));
+    return new_link(x->value, concat(x->next, incref(y)));
   }
 }
 
@@ -171,6 +171,7 @@ list concat(takes list x, takes list y)
     return 0;
   }
   if (is_nil(x)) {
+    decref(x);
     return give(y);
   } else {
     int value = x->value;
@@ -240,6 +241,6 @@ int main(void)
   print_list(z);
   decref(z);
 
-  
+
   return 0;
 }
