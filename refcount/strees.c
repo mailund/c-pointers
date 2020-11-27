@@ -17,10 +17,8 @@ struct node {
 struct node *empty_node;
 void init_nodes(void)
 {
-  // use an extra incref to prevent global vars to be
-  // deleted...No need for the callback, it should never
-  // be called.
-  empty_node = incref(rc_alloc(sizeof *empty_node, 0));
+  if (empty_node) return;
+  empty_node = rc_alloc(sizeof *empty_node, 0);
   if (!empty_node) abort(); // nothing works without it...
 }
 
@@ -43,20 +41,23 @@ struct node *new_node(int val,
                       takes struct node *left,
                       takes struct node *right)
 {
-  if (is_error(left) || is_error(right)) {
-    decref(left); decref(right);
-    return 0;
-  }
+  if (is_error(left) || is_error(right)) goto error;
+
   struct node *n = rc_alloc(sizeof *n, free_node);
+  if (!n) goto error;
+
   nodes++; // FIXME: debug
-  if (n) {
-    memcpy(n,
-      &(struct node) {
-        .val = val, .left = give(left), .right = give(right)
-      },
-      sizeof *n);
-  }
+
+  memcpy(n,
+    &(struct node) {
+      .val = val, .left = give(left), .right = give(right)
+    },
+    sizeof *n);
   return n;
+
+error:
+  decref(left); decref(right);
+  return 0;
 }
 
 bool contains(borrows struct node *tree, int val)
@@ -109,14 +110,14 @@ struct node *delete(takes struct node *tree, int val)
   struct node *right = incref(tree->right);
   decref(tree);
 
-  if (val < tree->val) {
+  if (val < tval) {
     return new_node(tval, delete(give(left), val), give(right));
-  } else if (val > tree->val) {
+  } else if (val > tval) {
     return new_node(tval, give(left), delete(give(right), val));
   } else {
     if (is_empty(left))  { decref(left);  return give(right); }
     if (is_empty(right)) { decref(right); return give(left);  }
-    int rmval = rightmost_value(tree->left);
+    int rmval = rightmost_value(left);
     return new_node(rmval, delete(give(left), rmval), give(right));
   }
 }
@@ -204,6 +205,18 @@ int main(void)
   decref(y);
   printf("%zu nodes\n", nodes);
 
+
+  printf("chapter example...\n");
+  x = insert(EMPT, 5);
+  x = insert(x, 1);
+  x = insert(x, 2);
+  x = insert(x, 3);
+
+  y = insert(incref(x), 10);
+  y = insert(y, 9);
+
+  printf("do I delete now?\n");
+  x = delete(x, 2);
 
   return 0;
 }
