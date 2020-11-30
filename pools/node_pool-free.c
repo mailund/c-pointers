@@ -9,9 +9,14 @@ struct node {
   int val;
 };
 
+union node_free_list {
+  union node_free_list *next;
+  struct node node;
+};
+
 struct subpool {
   struct subpool *next;
-  struct node nodes[];
+  union node_free_list nodes[];
 };
 
 struct subpool *new_subpool(size_t capacity, struct subpool *next)
@@ -20,12 +25,19 @@ struct subpool *new_subpool(size_t capacity, struct subpool *next)
   size_t size = offsetof(struct subpool, nodes) +
                 (sizeof *pool->nodes) * capacity;
   pool = malloc(size);
-  if (pool) pool->next = next;
+  if (!pool) return 0;
+
+  pool->next = next;
+  for (size_t i = 0; i < capacity - 1; i++)
+    pool->nodes[i].next = &pool->nodes[i + 1];
+  pool->nodes[capacity - 1].next = 0;
+
   return pool;
 }
 
 struct node_pool {
-  size_t top_capacity, top_used;
+  size_t top_capacity;
+  union node_free_list *next_free;
   struct subpool *subpools;
 };
 
@@ -37,14 +49,15 @@ struct node_pool *new_pool(size_t init_capacity)
   struct subpool *subpool = new_subpool(init_capacity, 0);
   if (!subpool) { free(pool); return 0; }
 
+  pool->subpools = subpool;
   pool->top_capacity = init_capacity;
-  pool->top_used = 0;
+  pool->next_free = &subpool->nodes[0];
   return pool;
 }
 
 struct node *node_alloc(struct node_pool *pool)
 {
-  if (pool->top_used == pool->top_capacity) {
+  if (pool->next_free == 0) {
     // We want to resize by adding a pool twice as large as the
     // current largest pool. But first check if we can.
     if (SIZE_MAX / 2 / sizeof(struct node) < pool->top_capacity) return 0;
@@ -53,11 +66,21 @@ struct node *node_alloc(struct node_pool *pool)
     if (!new_top) return 0;
 
     // Success, so add new pool to list
-    pool->subpools = new_top;
+    new_top->next = pool->subpools;
     pool->top_capacity = new_size;
-    pool->top_used = 0;
+    pool->next_free = &new_top->nodes[0];
   }
-  return &pool->subpools->nodes[pool->top_used++];
+  struct node *node = &pool->next_free->node;
+  pool->next_free = pool->next_free->next;
+  return node;
+}
+
+void free_node(struct node_pool *pool, struct node *node)
+{
+  union node_free_list *free_list =
+              (union node_free_list *)node;
+  free_list->next = pool->next_free;
+  pool->next_free = free_list;
 }
 
 void free_pool(struct node_pool *pool)
@@ -70,6 +93,9 @@ void free_pool(struct node_pool *pool)
   }
   free(pool);
 }
+
+
+
 
 int main(void)
 {
@@ -95,6 +121,13 @@ int main(void)
   assert(n9 - n8 == 1);
   struct node *n10 = node_alloc(pool);
   assert(n10 - n9 != 1);
+
+  free_node(pool, n2);
+  free_node(pool, n10);
+  struct node *reused10 = node_alloc(pool);
+  assert(n10 == reused10);
+  struct node *reused2 = node_alloc(pool);
+  assert(n2 == reused2);
 
   free_pool(pool);
 

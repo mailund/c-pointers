@@ -1,5 +1,5 @@
 
-tests = node_pool node_pool-resize
+tests = node_pool node_pool-resize node_pool-free
 
 all: $(tests)
 
