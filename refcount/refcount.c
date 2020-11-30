@@ -1,17 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
-
 #include <stddef.h>   // for max_align_t
-#include <stdalign.h> // for alignof
-#define MAXALIGN alignof(max_align_t)
-// On my machine, I need MAXALIGN to fit the refcount structure.
-// The union of size_t and void * takes 8 bytes and the function pointer
-// another 8 bytes, and max_align_t has alignment 16.
-// You will have to check on your machine as well...
-#define REFCOUNT_MEM MAXALIGN
-
 #include "refcount.h"
 
 struct refcount {
@@ -20,21 +10,20 @@ struct refcount {
   union { size_t rc; void *stack; };
   // Callback function for user-defined objects
   void (*cleanup)(void *, void *);
+  max_align_t user_data[];
 };
 
-#define refcount_mem(p) \
-  (struct refcount *)((char *)p - REFCOUNT_MEM)
-#define user_mem(rc) \
-  (void *)((char *)rc + REFCOUNT_MEM)
+#define container(p,type,member)                  \
+    (type *)((char *)p - offsetof(type, member))
+#define refcount_mem(p)                           \
+    container(p, struct refcount, user_data)
+#define user_mem(rc)                              \
+    (void *)(rc->user_data)
 
-
-
+#define RCSIZE offsetof(struct refcount, user_data)
 void *rc_alloc(size_t size, void (*cleanup)(void *, void *))
 {
-  static_assert(REFCOUNT_MEM >= sizeof(struct refcount),
-                "The refcount struct won't fit in the allocated memory!");
-
-  struct refcount *rc = malloc(REFCOUNT_MEM + size);
+  struct refcount *rc = malloc(RCSIZE + size);
   if (!rc) return 0;
 
   rc->rc = 1;
