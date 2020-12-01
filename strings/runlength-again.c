@@ -10,8 +10,8 @@ char const *skip(char const *x)
   return x;
 }
 
-bool runlength_encode_n(restrict char const *input,
-                        restrict char *output,
+bool runlength_encode_n(char const * restrict input,
+                        char * restrict output,
                         int n)
 {
   while (*input) {

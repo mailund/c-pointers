@@ -9,8 +9,8 @@ char const *skip(char const *x)
   return x;
 }
 
-void runlength_encode(restrict char const *input,
-                      restrict char *output)
+void runlength_encode(char const * restrict input,
+                      char * restrict output)
 {
   while (*input) {
     char c = *input;
@@ -23,7 +23,7 @@ void runlength_encode(restrict char const *input,
 
 int main(void)
 {
-  char char *x = "aaaabbbbbbbaabbbcbbccccc";
+  char const *x = "aaaabbbbbbbaabbbcbbccccc";
   char buffer[2 * strlen(x) + 1];
 
   runlength_encode(x, buffer);
