@@ -1,5 +1,5 @@
 
-tests = node_pool node_pool-resize node_pool-free
+tests = node_pool node_pool-resize node_pool-free generic-pool
 
 all: $(tests)
 
