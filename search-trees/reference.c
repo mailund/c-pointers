@@ -39,11 +39,12 @@ void free_nodes(struct node *n)
   free(n);
 }
 
-#define clear_stree(t) \
-  do { free_nodes(*t); *t = 0; } while(0)
-
-#define free_stree(t) \
-  do { free_nodes(*t); free(t); t = 0; } while(0)
+static inline
+void free_stree(stree *t)
+{
+  free_nodes(*t);
+  free(t);
+}
 
 // tail recursive
 bool contains(stree *tp, int val)
@@ -179,7 +180,7 @@ int main(void)
   assert(!contains(&t, 6));
 
   print_stree(&t); putchar('\n');
-  clear_stree(&t);
+  free_nodes(t);
 
   int array[] = { 1, 2, 3, 4, 6, 8, 10 };
   int n = sizeof array / sizeof *array;

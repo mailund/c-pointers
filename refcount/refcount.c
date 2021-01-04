@@ -13,10 +13,10 @@ struct refcount {
   max_align_t user_data[];
 };
 
-#define container(p,type,member)                  \
+#define struct_ptr(p,type,member)                  \
     (type *)((char *)p - offsetof(type, member))
 #define refcount_mem(p)                           \
-    container(p, struct refcount, user_data)
+    struct_ptr(p, struct refcount, user_data)
 #define user_mem(rc)                              \
     (void *)(rc->user_data)
 

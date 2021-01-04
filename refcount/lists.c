@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 struct link {
   int refcount;
@@ -33,10 +34,22 @@ void free_link(struct link *link)
 }
 
 // Empty lists and errors
-#define is_error(x) ((x) == 0)
-struct link NIL_LINK = { .refcount = 1 };
-#define is_nil(x)   ((x) == &NIL_LINK)
-#define NIL incref(&NIL_LINK)
+static inline
+bool is_error(struct link *x) { return x == 0; }
+
+struct link *get_NIL(void);
+
+static inline
+bool is_nil(struct link *x) { return x == get_NIL(); }
+
+struct link *get_NIL(void)
+{
+  static struct link NIL_LINK = { .refcount = 1 };
+  return &NIL_LINK;
+}
+
+#define NIL incref(get_NIL())
+
 
 // Give a reference; you lose it yourself
 #define takes
@@ -104,7 +117,9 @@ int length_rec(takes list x, int acc)
     return length_rec(give(next), acc + 1);
   }
 }
-#define length(x) length_rec(x, 0)
+
+static inline 
+int length(takes list x) { return length_rec(x, 0); }
 
 #endif
 
@@ -122,7 +137,9 @@ list reverse_rec(borrows list x, borrows list acc)
   }
 }
 
-#define reverse(x) reverse_rec(x, NIL)
+static inline
+list reverse(borrows list x)
+{ return reverse_rec(x, get_NIL()); }
 
 #else
 
@@ -144,7 +161,9 @@ list reverse_rec(takes list x, takes list acc)
   }
 }
 
-#define reverse(x) reverse_rec(x, NIL)
+static inline
+list reverse(takes list x)
+{ return reverse_rec(x, NIL); }
 
 #endif
 

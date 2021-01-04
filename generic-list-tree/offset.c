@@ -19,7 +19,7 @@ dlink *new_dlink(int value)
 }
 
 #include <stddef.h>
-#define container(p,type,member) \
+#define struct_ptr(p,type,member) \
   (type *)((char *)p - offsetof(type, member))
 
 void print_dlink(dlink *link)
@@ -29,11 +29,11 @@ void print_dlink(dlink *link)
 
 void print_forward(link *link)
 {
-  print_dlink(container(link, dlink, forward_link));
+  print_dlink(struct_ptr(link, dlink, forward_link));
 }
 void print_backward(link *link)
 {
-  print_dlink(container(link, dlink, backward_link));
+  print_dlink(struct_ptr(link, dlink, backward_link));
 }
 
 void free_dlink(dlink *link)
@@ -46,11 +46,11 @@ void free_dlink(dlink *link)
 }
 void free_forward(link *link)
 {
-  free_dlink(container(link, dlink, forward_link));
+  free_dlink(struct_ptr(link, dlink, forward_link));
 }
 void free_backward(link *link)
 {
-  free_dlink(container(link, dlink, backward_link));
+  free_dlink(struct_ptr(link, dlink, backward_link));
 }
 
 list_type forward_type = {
@@ -64,7 +64,7 @@ list_type backward_type = {
 
 bool is_forward_even(link *l)
 {
-  dlink *link = container(l, dlink, forward_link);
+  dlink *link = struct_ptr(l, dlink, forward_link);
   return link->value % 2 == 0;
 }
 
@@ -84,7 +84,7 @@ int main(void)
   print_list(backward);
 
   // Try changing the first link in forward...
-  dlink *link = container(front(forward), dlink, forward_link);
+  dlink *link = struct_ptr(front(forward), dlink, forward_link);
   link->value = 42;
   // Now both lists have changed (because it is the same link)
   print_list(forward);
