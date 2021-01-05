@@ -57,7 +57,7 @@ struct node *new_node(int val,
 
   memcpy(n,
     &(struct node) {
-      .val = val, .left = give(left), .right = give(right)
+      .val = val, .left = transfer(left), .right = transfer(right)
     },
     sizeof *n);
   return n;
@@ -83,7 +83,7 @@ struct node *insert(takes struct node *tree, int val)
     decref(tree);
     return new_node(val, EMPTY, EMPTY);
   }
-  if (val == tree->val) return give(tree);
+  if (val == tree->val) return transfer(tree);
 
   int tval = tree->val;
   struct node *left = incref(tree->left);
@@ -92,12 +92,12 @@ struct node *insert(takes struct node *tree, int val)
 
   if (val < tree->val) {
     return new_node(tree->val,
-                    insert(give(left), val),
-                    give(right));
+                    insert(transfer(left), val),
+                    transfer(right));
   } else {
     return new_node(tree->val,
-                    give(left),
-                    insert(give(right), val));
+                    transfer(left),
+                    insert(transfer(right), val));
   }
 }
 
@@ -110,7 +110,7 @@ int rightmost_value(borrows struct node *tree)
 
 struct node *delete(takes struct node *tree, int val)
 {
-  if (is_empty(tree)) return give(tree);
+  if (is_empty(tree)) return transfer(tree);
 
   int tval = tree->val;
   struct node *left = incref(tree->left);
@@ -118,14 +118,14 @@ struct node *delete(takes struct node *tree, int val)
   decref(tree);
 
   if (val < tval) {
-    return new_node(tval, delete(give(left), val), give(right));
+    return new_node(tval, delete(transfer(left), val), transfer(right));
   } else if (val > tval) {
-    return new_node(tval, give(left), delete(give(right), val));
+    return new_node(tval, transfer(left), delete(transfer(right), val));
   } else {
-    if (is_empty(left))  { decref(left);  return give(right); }
-    if (is_empty(right)) { decref(right); return give(left);  }
+    if (is_empty(left))  { decref(left);  return transfer(right); }
+    if (is_empty(right)) { decref(right); return transfer(left);  }
     int rmval = rightmost_value(left);
-    return new_node(rmval, delete(give(left), rmval), give(right));
+    return new_node(rmval, delete(transfer(left), rmval), transfer(right));
   }
 }
 

@@ -14,7 +14,7 @@ static inline void decref(void *p) { decref_ctx(p, 0); }
 // Annotation macros
 #define borrows
 #define takes
-#define give(x) x
+#define transfer(x) x
 
 
 #endif
