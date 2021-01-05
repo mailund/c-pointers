@@ -20,23 +20,22 @@ struct refcount {
 #define user_mem(rc)                              \
     (void *)(rc->user_data)
 
-#define RCSIZE offsetof(struct refcount, user_data)
 void *rc_alloc(size_t size, void (*cleanup)(void *, void *))
 {
-  struct refcount *rc = malloc(RCSIZE + size);
-  if (!rc) return 0;
+  struct refcount *mem = malloc(sizeof *mem + size);
+  if (!mem) return 0;
 
-  rc->rc = 1;
-  rc->cleanup = cleanup;
+  mem->rc = 1;
+  mem->cleanup = cleanup;
 
-  return user_mem(rc);
+  return user_mem(mem);
 }
 
 void *incref(void *p)
 {
   if (!p) return p; // it makes some code easier if we allow this
-  struct refcount *rc = refcount_mem(p);
-  rc->rc++;
+  struct refcount *mem = refcount_mem(p);
+  mem->rc++;
   return p;
 }
 
@@ -55,17 +54,17 @@ void *decref_ctx(void *p, void *ctx)
 {
   if (!p) return p; // accept NULL as free() would...
 
-  struct refcount *rc = refcount_mem(p);
-  if (--rc->rc == 0) {
-    rc->stack = 0; // probably already is, with rc == 0, but still...
+  struct refcount *mem = refcount_mem(p);
+  if (--mem->rc == 0) {
+    mem->stack = 0; // probably already is, with rc == 0, but still...
     if (ctx) {
       // Schedule for deletion
       struct refcount *stack = ctx;
-      rc->stack = stack->stack;
-      stack->stack = rc;
+      mem->stack = stack->stack;
+      stack->stack = mem;
     } else {
       // Start cleanup
-      cleanup(rc);
+      cleanup(mem);
     }
     return 0; // reference is now gone...
   }

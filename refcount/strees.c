@@ -13,18 +13,23 @@ struct node {
   struct node * const right;
 };
 
-// global refcounted vars must be initialised
-struct node *empty_node;
-void init_nodes(void)
+
+struct node *get_EMPTY(void)
 {
-  if (empty_node) return;
-  empty_node = rc_alloc(sizeof *empty_node, 0);
-  if (!empty_node) abort(); // nothing works without it...
+  static struct node *empty_node = 0;
+  if (!empty_node) empty_node = rc_alloc(sizeof *empty_node, 0);
+  if (!empty_node) abort(); // nothing works without it
+  return empty_node;
 }
 
-#define EMPT        incref(empty_node)
-#define is_empty(t) (t == empty_node)
-#define is_error(t) (t == 0)
+#define EMPTY incref(get_EMPTY())
+
+static inline 
+bool is_empty(borrows struct node *t)
+{ return t == get_EMPTY(); }
+static inline
+bool is_error(borrows struct node *t)
+{ return t == 0; }
 
 size_t nodes;
 
@@ -41,7 +46,9 @@ struct node *new_node(int val,
                       takes struct node *left,
                       takes struct node *right)
 {
-  if (is_error(left) || is_error(right)) goto error;
+  if (is_error(left) || is_error(right)) {
+    decref(left); decref(right); return 0;
+  }
 
   struct node *n = rc_alloc(sizeof *n, free_node);
   if (!n) goto error;
@@ -74,7 +81,7 @@ struct node *insert(takes struct node *tree, int val)
   if (is_error(tree)) return 0;
   if (is_empty(tree)) {
     decref(tree);
-    return new_node(val, EMPT, EMPT);
+    return new_node(val, EMPTY, EMPTY);
   }
   if (val == tree->val) return give(tree);
 
@@ -134,13 +141,11 @@ void print_tree(borrows struct node *n)
 
 int main(void)
 {
-  init_nodes();
-
-  struct node *x = new_node(1, new_node(0, EMPT, EMPT),
-                               new_node(3, new_node(2, EMPT, EMPT), EMPT));
+  struct node *x = new_node(1, new_node(0, EMPTY, EMPTY),
+                               new_node(3, new_node(2, EMPTY, EMPTY), EMPTY));
   print_tree(x); putchar('\n');
 
-  struct node *y = new_node(10, new_node(9, EMPT, EMPT), new_node(11, EMPT, EMPT));
+  struct node *y = new_node(10, new_node(9, EMPTY, EMPTY), new_node(11, EMPTY, EMPTY));
   struct node *z = new_node(5, incref(x), incref(y));
   print_tree(z); putchar('\n');
 
@@ -154,7 +159,7 @@ int main(void)
 
   printf("%zu nodes\n", nodes);
 
-  x = insert(EMPT, 5);
+  x = insert(EMPTY, 5);
   print_tree(x); putchar('\n');
   x = insert(x, 2);
   print_tree(x); putchar('\n');
@@ -168,7 +173,7 @@ int main(void)
   printf("%zu nodes\n", nodes);
 
   printf("rebuilding x\n");
-  x = insert(EMPT, 5);
+  x = insert(EMPTY, 5);
   print_tree(x); putchar('\n');
   x = insert(x, 2);
   print_tree(x); putchar('\n');
@@ -207,7 +212,7 @@ int main(void)
 
 
   printf("chapter example...\n");
-  x = insert(EMPT, 5);
+  x = insert(EMPTY, 5);
   x = insert(x, 1);
   x = insert(x, 2);
   x = insert(x, 3);
