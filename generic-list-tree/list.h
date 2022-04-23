@@ -23,7 +23,11 @@ void link_after(link *x, link *y)
   y->prev = x; y->next = x->next;
   connect_neighbours(y);
 }
-#define link_before(x, y) link_after((x)->prev, y)
+static inline
+void link_before(link *x, link *y)
+{
+  link_after((x)->prev, y);
+}
 
 // This time, unlink will set x's pointers to NULL.
 // We don't want to risk the callback function modifying
@@ -46,13 +50,19 @@ typedef struct list {
   list_type type;
 } list;
 
-#define head(x)     (&(x)->head)
-#define front(x)    (head(x)->next)
-#define back(x)     (head(x)->prev)
-#define is_empty(x) (head(x) == front(x))
+static inline 
+link *head(list *x)  { return &x->head; }
+static inline 
+link *front(list *x) { return head(x)->next; }
+static inline 
+link *back(list *x)  { return head(x)->prev; }
+static inline 
+bool is_empty(list *x) { return head(x) == front(x); }
 
-#define append(x,link)   link_before(head(x), link)
-#define prepend(x, link) link_after(head(x), link)
+static inline
+void append(list *x, link *link)  { link_before(head(x), link); }
+static inline
+void prepend(list *x, link *link) { link_after(head(x), link); }
 
 list  *new_list(list_type type);
 

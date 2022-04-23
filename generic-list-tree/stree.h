@@ -22,7 +22,8 @@ typedef struct stree {
 } stree;
 
 stree    *new_tree(stree_type type);
-#define empty_tree(t) ((t)->root.left == 0)
+static inline bool is_empty_tree(stree *tree)
+{ return tree->root.left == 0; }
 void    print_tree(stree *tree);
 void   insert_node(stree *tree, node *n);
 node    *find_node(stree *tree, void const *key);
